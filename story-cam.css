@@ -1,0 +1,69 @@
+/* story-cam.css — شاشة إضافة قصة (صورة / مقطع مرئي / مباشر) */
+.overlay.story-cam{background:#000;justify-content:flex-start;z-index:40;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+.sc-screen{position:relative;flex:1;margin:0;border-radius:0 0 26px 26px;overflow:hidden;background:#111}
+.sc-screen>video,.sc-screen>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#sc-video.front{transform:scaleX(-1)}
+.sc-fallback{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#fff9;text-align:center;padding:30px}
+.sc-fallback svg{font-size:54px}.sc-fallback p{margin:0;font-size:16px}
+
+/* الشريط العلوي */
+.sc-top{position:absolute;inset:0 0 auto;display:flex;align-items:center;gap:6px;padding:12px;direction:ltr;
+  background:linear-gradient(#0008,transparent);z-index:3}
+.sc-ic{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:26px;flex:none}
+.sc-ic.on{background:#fff3;color:#ffd84a}
+.sc-user{display:flex;align-items:center;gap:10px;color:#fff;direction:rtl;margin-left:auto;order:9}
+.sc-user .avatar{width:38px;height:38px}
+.sc-user b{display:block;font-size:15px}.sc-user small{opacity:.75;font-size:12px}
+.sc-timer{position:absolute;left:50%;top:18px;transform:translateX(-50%);color:#fff;font-size:17px;font-variant-numeric:tabular-nums;
+  background:#0006;padding:2px 12px;border-radius:14px;direction:ltr}
+.sc-timer.rec::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;background:#e5413f;margin-inline-end:7px;animation:scblink 1s infinite}
+@keyframes scblink{50%{opacity:.25}}
+.sc-gridlines{position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:linear-gradient(90deg,transparent calc(33.3% - .5px),#fff5 calc(33.3% - .5px),#fff5 calc(33.3% + .5px),transparent calc(33.3% + .5px),transparent calc(66.6% - .5px),#fff5 calc(66.6% - .5px),#fff5 calc(66.6% + .5px),transparent calc(66.6% + .5px)),
+  linear-gradient(transparent calc(33.3% - .5px),#fff5 calc(33.3% - .5px),#fff5 calc(33.3% + .5px),transparent calc(33.3% + .5px),transparent calc(66.6% - .5px),#fff5 calc(66.6% - .5px),#fff5 calc(66.6% + .5px),transparent calc(66.6% + .5px))}
+
+/* أزرار الالتقاط */
+.sc-mid{position:absolute;inset:auto 0 22px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;direction:ltr;z-index:3}
+.sc-thumb,.sc-flip{width:56px;height:56px;border-radius:14px;display:grid;place-items:center;color:#fff;font-size:28px;background:#0007;border:2px solid #fff6;overflow:hidden}
+.sc-thumb img{width:100%;height:100%;object-fit:cover}
+.sc-flip{border-radius:50%;border:0;background:#0006}
+.sc-shutter{width:82px;height:82px;border-radius:50%;border:5px solid #fff;display:grid;place-items:center;transition:transform .15s}
+.sc-shutter i{width:62px;height:62px;border-radius:50%;background:#fff;transition:all .2s}
+.sc-shutter:active{transform:scale(.93)}
+.story-cam[data-mode=video] .sc-shutter i{background:#e5413f}
+.story-cam.recording .sc-shutter i{width:30px;height:30px;border-radius:8px}
+.story-cam.recording .sc-thumb,.story-cam.recording .sc-flip{opacity:0;pointer-events:none}
+
+/* البث المباشر */
+.sc-live{position:absolute;inset:auto 0 18px;padding:0 16px;display:flex;align-items:center;gap:10px;z-index:3}
+.live-btn{background:#c94d5f;color:#fff;flex:1;height:58px;border-radius:29px;font-size:19px}
+.sc-live-flip{background:#0006}
+
+/* المعاينة قبل النشر */
+.sc-review{position:absolute;inset:auto 0 0;padding:40px 16px 18px;background:linear-gradient(transparent,#000d);z-index:4}
+.sc-cap{width:100%;height:50px;border-radius:25px;background:#0008;border:1px solid #fff4;color:#fff;padding:0 20px;font-size:17px;outline:0;margin-bottom:12px}
+.sc-cap::placeholder{color:#fffa}
+.sc-review-btns{display:flex;gap:10px}.sc-review-btns .btn{margin:0;flex:1}.sc-review-btns .btn.ghost{background:#fff2;color:#fff}
+
+/* شريط الأوضاع */
+.sc-modes{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 12px;color:#fff;background:#000}
+.sc-mode{color:#fffb;font-size:19px;padding:9px 18px;border-radius:22px;transition:background .2s,color .2s}
+.sc-mode.active{background:#262626;color:#fff}
+.sc-gear{color:#fff;font-size:28px;width:44px;height:44px;display:grid;place-items:center}
+.story-cam.reviewing .sc-modes,.story-cam.recording .sc-modes{display:none}
+.story-cam.reviewing .sc-top .sc-ic,.story-cam.recording .sc-top .sc-ic{display:none}
+.story-cam.reviewing .sc-mid,.story-cam.reviewing .sc-live,.story-cam.reviewing .sc-gridlines{display:none}
+.story-cam.recording .sc-user{display:none}
+
+/* ورقة الاشتراك */
+#sub-overlay{z-index:50}
+.sub-sheet{text-align:center}
+.sub-ic{width:74px;height:74px;border-radius:50%;margin:4px auto 12px;display:grid;place-items:center;font-size:38px;color:#fff;background:linear-gradient(135deg,#d9566a,#c94d5f)}
+.sub-sheet h3{margin-bottom:8px}
+.sub-sheet .hint{font-size:18px;line-height:1.8;margin:0 0 18px;color:var(--text)}
+.sub-sheet .hint b{color:var(--link)}
+.sub-later{display:block;margin:14px auto 0;padding:6px 18px}
+
+/* الفيديو داخل عارض القصص */
+.story-stage video{max-width:100%;max-height:100%;object-fit:contain;display:none}
+.story-stage.vid video{display:block}.story-stage.vid img{display:none}

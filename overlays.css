@@ -1,0 +1,31 @@
+/* overlays.css — ورقة الصورة والقص والتنبيه */
+/* الطبقات */
+.overlay{position:fixed;inset:0;background:#000a;z-index:20;display:flex;flex-direction:column;justify-content:flex-end}
+.photo-top{flex:1;display:grid;place-items:center}
+.bottom-sheet{background:var(--sheet);border-radius:34px 34px 0 0;padding:12px 28px calc(22px + env(safe-area-inset-bottom));
+  border:1px solid var(--card-line);border-bottom:0}
+.grab{width:56px;height:6px;border-radius:3px;background:#56626f;margin:0 auto 18px}
+.bottom-sheet h3{margin:0 0 14px;font-size:26px;font-weight:600}
+.row{width:100%;display:flex;align-items:center;gap:16px;padding:16px 0;font-size:22px;color:var(--text);text-align:start}
+.row svg{font-size:34px;color:var(--link);order:0}
+.row.danger,.row.danger svg{color:var(--danger)}
+.overlay.crop{justify-content:center;align-items:center;padding:16px}
+.crop-card{width:100%;max-width:420px;background:var(--card);border:1px solid var(--card-line);border-radius:30px;
+  overflow:hidden;padding-bottom:18px}
+.crop-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px}
+.crop-head h3{margin:0;font-size:24px;font-weight:600}
+.txt{font-size:20px}.txt.muted{color:var(--muted)}.txt.blue{color:var(--link)}
+.crop-stage{position:relative;background:#0c1116;aspect-ratio:1/1;touch-action:none}
+.crop-stage canvas{width:100%;height:100%;display:block}
+.crop-ring{position:absolute;inset:6%;border:3px solid #fff;border-radius:50%;pointer-events:none;
+  box-shadow:0 0 0 999px #0c1116aa}
+.zoom{display:flex;align-items:center;gap:14px;padding:16px 22px;color:var(--muted);font-size:26px}
+.zoom input{flex:1;accent-color:var(--link);direction:ltr}
+.crop-card .btn{width:calc(100% - 36px);margin:0 18px}
+
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#000c;color:#fff;
+  padding:10px 20px;border-radius:20px;z-index:50;font-size:16px}
+
+.card-head>*{position:relative;z-index:1}
+.pw{position:relative}.pw .field{padding-inline-end:56px}
+.pw button{position:absolute;inset-block:0;inset-inline-end:14px;color:var(--muted);font-size:24px;display:grid;place-items:center;width:36px}

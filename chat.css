@@ -1,0 +1,134 @@
+/* chat.css — قائمة المحادثات وشاشة الدردشة */
+.chat-item{cursor:pointer;transition:background .2s,transform .15s}
+.chat-item:active,#results .item:active{transform:scale(.98)}
+#results .item{cursor:pointer}
+.chat-item .grow{flex:1;min-width:0}
+.chat-item small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-item time{color:var(--muted);font-size:13px;align-self:flex-start;margin-top:4px}
+.settings-list .item.static{cursor:default}
+
+/* رأس الدردشة */
+.chat-head{justify-content:flex-start;gap:12px}
+.chat-head .back{width:40px;height:40px;border-radius:50%;color:#fff;font-size:26px;display:grid;place-items:center;flex:none}
+.chat-head .back:active{background:#fff2}
+.chat-head .avatar{width:42px;height:42px;flex:none}
+.chat-head .who{min-width:0}
+.chat-head b{display:block;font-size:19px;color:#fff}
+.chat-head small{color:#ffffffb0;font-size:12px}
+
+/* الرسائل */
+.msgs{flex:1;overflow:auto;padding:16px 14px;display:flex;flex-direction:column;gap:6px}
+.chat-hint{margin:auto;color:var(--muted);font-size:16px}
+.msg{max-width:78%;padding:9px 14px 6px;border-radius:20px;line-height:1.7;font-size:17px;word-break:break-word;white-space:pre-wrap}
+.msg time{display:block;font-size:11px;opacity:.65;margin-top:1px;text-align:end}
+.msg.mine{align-self:flex-start;background:var(--blue);color:#fff;border-end-start-radius:6px}
+.msg.theirs{align-self:flex-end;background:var(--card);border:1px solid var(--card-line);border-end-end-radius:6px}
+.msg.typing{display:flex;gap:5px;padding:14px 16px}
+.msg.typing i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+
+/* شريط الكتابة */
+.composer{display:flex;gap:10px;align-items:center;padding:10px 14px calc(12px + env(safe-area-inset-bottom));background:var(--bg);border-top:1px solid var(--card-line)}
+.composer .field{margin:0;flex:1;height:48px}
+.send{width:48px;height:48px;border-radius:50%;background:var(--blue);color:#fff;font-size:24px;display:grid;place-items:center;flex:none;transition:transform .15s,filter .2s}
+.send svg{transform:scaleX(-1)}
+.send:active{transform:scale(.9);filter:brightness(.9)}
+.item small,.chat-head small{unicode-bidi:plaintext}
+
+/* أزرار الرأس، المرفقات، الروابط */
+.chat-head .who{flex:1}
+.composer .attach{width:44px;height:44px;border-radius:50%;background:var(--field);color:var(--link);font-size:24px;display:grid;place-items:center;flex:none;transition:transform .15s}
+.composer .attach:active{transform:scale(.9)}
+.msg.has-att{width:78%;max-width:300px;padding:4px 4px 6px}
+.msg.has-att .txt{display:block;padding:6px 10px 0}
+.msg.has-att time{padding:0 10px}
+.att{display:block;border-radius:16px;overflow:hidden}
+.att img,.att.video,video.att{display:block;width:100%;max-height:340px;object-fit:cover;background:#000}
+.att.image{cursor:zoom-in;min-height:80px;background:#0003}
+.att.file{display:flex;gap:12px;align-items:center;padding:10px;cursor:pointer;background:#0003}
+.att.file svg{font-size:34px;flex:none}
+.att.file div{min-width:0}.att.file b{display:block;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;direction:ltr;text-align:start}
+.att.file small{opacity:.7;font-size:12px}
+.att.gone{padding:14px;font-size:14px;opacity:.7;background:#0003}
+.mention,.url{direction:ltr;unicode-bidi:isolate;cursor:pointer;font-weight:500;color:var(--link)}
+.mention{font-size:.9em}
+.mention{display:inline-block}.url{word-break:break-all}
+.msg.mine .mention,.msg.mine .url{color:#fff;text-decoration:underline}
+.link-url{direction:ltr;text-align:start;word-break:break-all;background:var(--field);border-radius:14px;padding:12px 14px;margin:0 0 10px;font-size:15px}
+.overlay.view{justify-content:center;align-items:center;background:#000e;padding:12px}
+.overlay.view img{max-width:100%;max-height:100%;border-radius:12px}
+.img-prev{background:#0c1116;display:grid;place-items:center;max-height:55vh;overflow:hidden}
+.img-prev img{max-width:100%;max-height:55vh;display:block}
+.crop-card .cap{width:calc(100% - 36px);margin:14px 18px}
+
+/* شاشة إعدادات الحساب وملف الشخص */
+.sub-body{flex:1;overflow:auto;padding:20px 22px;max-width:480px;width:100%;margin:0 auto}
+.sub-body.center{text-align:center}
+.sub-body.center .avatar.big{margin:24px auto 14px}
+.sub-body h2{margin:0;font-size:26px}
+
+.acc-av{position:relative;z-index:1;display:block;width:132px;height:132px;margin:-66px auto 18px;border-radius:50%}
+.acc-av .cam{width:40px;height:40px;font-size:20px;bottom:0;left:0;border-width:4px}
+.flabel{display:block;color:var(--muted);font-size:15px;margin:0 8px 6px}
+.field.ltr{direction:ltr;text-align:start}
+.mention.shake{animation:shake .4s}
+.acc-av .avatar{width:132px;height:132px}
+
+.item small{font-size:12px}
+/* خلفية الملف */
+.cover{position:relative;height:200px;margin:-20px -22px 0;background:linear-gradient(160deg,var(--head2),var(--head)) center/cover;overflow:hidden}
+.cover::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#ffffff14 0,transparent 35%,var(--bg) 100%)}
+.cover-actions{position:absolute;top:10px;inset-inline-end:10px;display:flex;gap:8px;z-index:2}
+.cover-btn{background:#000a;color:#fff;border-radius:18px;padding:8px 14px;font-size:14px;font-weight:600;backdrop-filter:blur(6px)}
+.cover-btn:active{transform:scale(.94)}
+.acc-av .avatar,.sub-body.center .avatar.big{border:5px solid var(--bg)}
+.sub-body.center .avatar.big{position:relative;z-index:1;margin:-65px auto 12px}
+.cover-stage{background:#0c1116;aspect-ratio:9/5;touch-action:none}
+.cover-stage canvas{width:100%;height:100%;display:block}
+
+.ltr{direction:ltr;unicode-bidi:isolate}
+.field.area{height:96px;padding:14px 22px;border-radius:22px;line-height:1.6;resize:none;display:block}
+
+/* أزرار الملف الشخصي والمعلومات */
+.actions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0 20px}
+.act{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--text)}
+.act span{width:56px;height:56px;border-radius:50%;background:var(--card);border:1px solid var(--card-line);display:grid;place-items:center;font-size:24px;color:var(--link);transition:transform .15s,background .2s}
+.act:active span{transform:scale(.9)}
+.act.on span{background:var(--blue);color:#fff}
+.act small{font-size:12px;color:var(--muted)}
+.info{text-align:start;background:var(--card);border:1px solid var(--card-line);border-radius:22px;padding:6px 16px}
+.info-row{display:flex;gap:14px;align-items:flex-start;padding:12px 0}
+.info-row+.info-row{border-top:1px solid var(--card-line)}
+.info-row>svg{font-size:22px;color:var(--link);margin-top:3px;flex:none}
+.info-row small{display:block;color:var(--muted);font-size:12px}
+.info-row p{margin:2px 0 0;font-size:16px;line-height:1.7;word-break:break-word}
+.mi{font-size:14px;color:var(--muted);vertical-align:middle}
+
+/* شريط القصص */
+.stories{display:flex;gap:14px;overflow-x:auto;padding:2px 2px 14px;margin-bottom:6px;scrollbar-width:none}
+.stories::-webkit-scrollbar{display:none}
+.st{flex:none;width:68px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--text)}
+.st small{font-size:12px;max-width:68px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rw{position:relative}
+.ring{width:66px;height:66px;border-radius:50%;padding:3px;background:var(--card-line)}
+.ring.new{background:linear-gradient(135deg,#6ad0ff,#2a7abf,#4aa3e0)}
+.ring.none{background:none}
+.ring .avatar{border:3px solid var(--bg)}
+.plus{position:absolute;bottom:-2px;inset-inline-end:-2px;width:22px;height:22px;border-radius:50%;background:var(--blue);border:2px solid var(--bg);color:#fff;font-size:16px;line-height:18px;text-align:center;font-weight:700}
+.st:active .ring{transform:scale(.94)}
+
+/* عارض القصص */
+.overlay.story-view{background:#000;justify-content:flex-start;z-index:30}
+.story-bars{display:flex;gap:4px;padding:calc(10px + env(safe-area-inset-top)) 12px 8px}
+.story-bars i{flex:1;height:3px;border-radius:2px;background:#fff4;overflow:hidden}
+.story-bars b{display:block;height:100%;background:#fff;width:0}
+.story-head{display:flex;align-items:center;gap:10px;padding:4px 12px 10px;color:#fff}
+.story-head .avatar{width:38px;height:38px;flex:none}
+.story-head>div:not(.avatar){flex:1;min-width:0}
+.story-head b{display:block;font-size:15px}.story-head small{opacity:.7;font-size:12px}
+.story-head button{color:#fff;font-size:24px;width:38px;height:38px;display:grid;place-items:center}
+.story-stage{flex:1;position:relative;display:grid;place-items:center;overflow:hidden}
+.story-stage img{max-width:100%;max-height:100%;object-fit:contain}
+.story-cap{margin:0;padding:16px 18px calc(18px + env(safe-area-inset-bottom));color:#fff;text-align:center;background:linear-gradient(transparent,#000b);font-size:17px;line-height:1.7}
+.location-card{display:flex;align-items:center;gap:10px;min-width:190px;max-width:250px;padding:11px 12px;border-radius:15px;background:#152b37;color:inherit;text-decoration:none;margin:3px}
+.location-pin{width:38px;height:38px;display:grid;place-items:center;border-radius:12px;background:#1e7184;font-size:19px;flex:none}
+.location-card b,.location-card small{display:block}.location-card b{font-size:13px}.location-card small{font-size:11px;color:#b8c8d0;margin-top:3px}.location-arrow{margin-inline-start:auto;color:#7dd4e5;font-size:20px}

@@ -1,0 +1,27 @@
+/* menu.css — القائمة الجانبية وصفحات الأقسام وحساب الإدارة */
+.home-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.home-head .tab-title{margin:4px 4px 10px}
+.menu-btn{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font-size:28px;color:var(--text);background:var(--card);border:1px solid var(--card-line)}
+.menu-btn:active{transform:scale(.92)}
+
+.overlay.drawer-wrap{z-index:35;justify-content:flex-start;align-items:flex-start;flex-direction:row}
+.drawer{width:78%;max-width:320px;height:100%;background:var(--card);border-inline-start:1px solid var(--card-line);padding:calc(24px + env(safe-area-inset-top)) 14px 20px;
+  display:flex;flex-direction:column;gap:4px;animation:drawerin .25s ease both;margin-right:auto;margin-left:0}
+.drawer-wrap.closing .drawer{animation:drawerout .22s ease both}
+@keyframes drawerin{from{transform:translateX(-100%)}to{transform:none}}
+@keyframes drawerout{to{transform:translateX(-100%)}}
+.drawer-head{display:flex;align-items:center;gap:12px;padding:6px 8px 18px;margin-bottom:8px;border-bottom:1px solid var(--card-line)}
+.drawer-head .avatar{width:52px;height:52px;flex:none}.drawer-head small{display:block;color:var(--muted)}
+.drawer-item{display:flex;align-items:center;gap:16px;padding:15px 12px;border-radius:16px;font-size:19px;color:var(--text);text-align:start}
+.drawer-item svg{font-size:26px;color:var(--link);flex:none}
+.drawer-item:active{background:var(--field)}
+
+.overlay.feat-page{background:var(--bg);z-index:36;justify-content:flex-start}
+.feat-page .topbar{padding-top:calc(10px + env(safe-area-inset-top))}
+.feat-body{flex:1;overflow:auto;padding:18px 16px}
+.feat-body .row{background:var(--card);border-radius:18px;padding:14px 16px;margin-bottom:10px;width:100%}
+.feat-body .empty b{display:block;color:var(--text);font-size:22px;margin-bottom:6px}
+.feat-body .soon{display:inline-block;margin-top:12px;background:var(--field);border-radius:10px;padding:3px 12px;font-size:13px}
+.wallet-card{background:linear-gradient(135deg,var(--head),var(--head2));border-radius:24px;padding:22px;margin-bottom:16px;color:#fff;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.wallet-card small{width:100%;opacity:.85;font-size:15px}.wallet-card b{font-size:42px}.wallet-card span{font-size:18px;opacity:.9}
+

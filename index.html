@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" translate="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#10151c">
+<meta name="google" content="notranslate">
+<title>محادثة</title>
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/chat.css">
+<link rel="stylesheet" href="css/overlays.css">
+<link rel="stylesheet" href="css/story-cam.css">
+<link rel="stylesheet" href="css/story-edit.css">
+<link rel="stylesheet" href="css/menu.css">
+<link rel="stylesheet" href="css/animations.css">
+<link rel="stylesheet" href="css/calls.css">
+
+</head>
+<body>
+<div id="app">
+
+  <!-- 1) تسجيل الدخول / إنشاء حساب -->
+  <section class="screen" id="s-login">
+    <div class="card">
+      <header class="card-head">
+        <div class="logo"><svg viewBox="0 0 24 24"><path d="M21 3 3 10.5l7 2.5 2.5 7L21 3Z"/><path d="m10 13 4-4"/></svg></div>
+        <h1>محادثة</h1>
+      </header>
+      <form class="sheet" id="auth-form" novalidate>
+        <h2 id="login-title">تسجيل الدخول</h2>
+        <input class="field" id="username" type="text" placeholder="اسم المستخدم" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="20" hidden>
+        <p class="avail" id="avail" hidden></p>
+        <input class="field" id="email" type="email" value="karrarkooqw16@gmail.com" placeholder="البريد الإلكتروني" autocomplete="email" inputmode="email" autocapitalize="none" spellcheck="false">
+        <div class="pw"><input class="field" id="password" type="password" placeholder="كلمة المرور" autocomplete="current-password"><button type="button" id="toggle-pw" aria-label="إظهار كلمة المرور"><svg viewBox="0 0 24 24"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+        <p class="error" id="login-error" hidden></p>
+        <button class="btn primary" id="btn-login" type="submit">تسجيل الدخول</button>
+        <button class="btn ghost google-btn" id="btn-google" type="button"><svg class="google-mark" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="#4285F4" d="M23 12.3c0-.8-.1-1.5-.2-2.2H12v4.2h6.2a5.3 5.3 0 0 1-2.3 3.5v2.9h3.7c2.2-2 3.4-4.9 3.4-8.4Z"/><path fill="#34A853" d="M12 24c3.1 0 5.7-1 7.6-2.8l-3.7-2.9c-1 .7-2.3 1.1-3.9 1.1-3 0-5.5-2-6.4-4.7H1.8v3C3.7 21.5 7.5 24 12 24Z"/><path fill="#FBBC05" d="M5.6 14.7a7.2 7.2 0 0 1 0-4.6v-3H1.8a12 12 0 0 0 0 10.7l3.8-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.7 0 3.2.6 4.4 1.7l3.3-3.3A12 12 0 0 0 1.8 7.1l3.8 3C6.5 6.8 9 4.8 12 4.8Z"/></svg><span>استخدام عبر Google</span></button>
+        <p class="switch"><span id="switch-text">ما عندك حساب؟</span> <a href="#" id="switch-link">إنشاء حساب</a></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- التحقق من البريد -->
+  <section class="screen" id="s-verify" hidden>
+    <div class="card">
+      <header class="card-head">
+        <div class="logo"><svg viewBox="0 0 24 24"><path d="M21 3 3 10.5l7 2.5 2.5 7L21 3Z"/><path d="m10 13 4-4"/></svg></div>
+        <h1>محادثة</h1>
+      </header>
+      <div class="sheet">
+        <h2>تحقق من بريدك</h2>
+        <p class="hint" id="verify-text"></p>
+        <p class="error" id="verify-error" hidden></p>
+        <button class="btn primary" id="btn-verify" type="button">تم التحقق</button>
+        <button class="btn ghost" id="btn-resend" type="button">إعادة إرسال الرابط</button>
+        <a href="#" class="link-center" id="btn-verify-out">تسجيل الخروج</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3) أكمل ملفك -->
+  <section class="screen" id="s-profile" hidden>
+    <div class="card">
+      <header class="card-head short">
+        <h1 class="title-profile">أكمل ملفك</h1>
+      </header>
+      <div class="sheet profile-sheet">
+        <button class="avatar-btn" id="avatar-btn" type="button" aria-label="صورة الملف">
+          <div class="avatar" id="avatar-preview"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M5 20v-3a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5v3"/></svg></div>
+          <span class="cam"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3v11H4Z"/><circle cx="12" cy="13" r="3.2"/></svg></span>
+        </button>
+        <input class="field" id="first-name" placeholder="الاسم" autocomplete="given-name">
+        <input class="field" id="last-name" placeholder="اسم العائلة" autocomplete="family-name">
+        <p class="hint center">هذا الاسم يظهر لأصدقائك</p>
+        <p class="error" id="profile-error" hidden></p>
+        <div class="spacer"></div>
+        <button class="btn primary" id="btn-next">التالي</button>
+        <a href="#" class="link-center" id="btn-profile-skip">تخطي الصورة</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4) الشاشة الرئيسية -->
+  <section class="screen main" id="s-main" hidden>
+    <div class="tab-body" id="tab-body"></div>
+    <nav class="bottom-nav" id="bottom-nav" aria-label="التنقل"></nav>
+  </section>
+
+  <!-- القائمة الجانبية (ثلاث شخطات) -->
+  <div class="overlay drawer-wrap" id="menu-overlay" hidden>
+    <aside class="drawer" id="drawer">
+      <div class="drawer-head"><div class="avatar" id="drawer-av"></div><div><b id="drawer-name"></b><small id="drawer-user"></small></div></div>
+      <button class="drawer-item" data-feat="wallet"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 14.5h2"/></svg><span>محفظتك</span></button>
+      <button class="drawer-item" data-feat="shop"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6ZM9 8V6a3 3 0 0 1 6 0v2"/></svg><span>التسوق / المنتجات</span></button>
+      <button class="drawer-item" data-feat="dev"><svg viewBox="0 0 24 24"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/></svg><span>قسم المطورين</span></button>
+      <button class="drawer-item" data-feat="bots"><svg viewBox="0 0 24 24"><rect x="5" y="8" width="14" height="11" rx="3"/><path d="M12 8V5M9.5 13v.5M14.5 13v.5M9 16.5h6M3 13v2M21 13v2"/></svg><span>بوتات</span></button>
+      <button class="drawer-item" data-feat="cloud"><svg viewBox="0 0 24 24"><path d="M7 18a4.5 4.5 0 0 1-.6-8.96A5.5 5.5 0 0 1 17 8.5 4.8 4.8 0 0 1 17 18Z"/></svg><span>استضافة سحابية</span></button>
+    </aside>
+  </div>
+
+  <!-- صفحة قسم من القائمة -->
+  <div class="overlay feat-page" id="feat-overlay" hidden>
+    <header class="topbar chat-head">
+      <button class="back" id="feat-back" aria-label="رجوع"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <div class="who"><b id="feat-title"></b></div>
+    </header>
+    <div class="feat-body" id="feat-body"></div>
+  </div>
+
+  <!-- 5) شاشة الدردشة -->
+  <section class="screen main chat" id="s-chat" hidden>
+    <header class="topbar chat-head">
+      <button class="back" id="chat-back" aria-label="رجوع"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <div class="avatar" id="chat-avatar"></div>
+      <div class="who" id="chat-who"><b id="chat-name"></b><small id="chat-sub"></small></div>
+      <button class="back" id="chat-call" aria-label="اتصال"><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1Z"/></svg></button>
+      <button class="back" id="chat-video" aria-label="مكالمة فيديو"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="12" height="12" rx="3"/><path d="m15 10 6-3v10l-6-3"/></svg></button>
+    </header>
+    <div class="msgs" id="msgs"></div>
+    <div class="composer">
+      <button class="attach" id="msg-attach" aria-label="إرفاق"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      <input class="field" id="msg-input" placeholder="اكتب رسالة..." autocomplete="off" maxlength="1000">
+      <button class="send" id="msg-send" aria-label="إرسال" hidden><svg viewBox="0 0 24 24"><path d="M21 3 3 10.5l7 2.5 2.5 7L21 3Z"/><path d="m10 13 4-4"/></svg></button>
+      <button class="send mic" id="msg-mic" aria-label="تسجيل بصمة"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+      <div class="rec-bar" id="rec-bar" hidden>
+        <button class="rec-btn" id="rec-del" type="button" aria-label="حذف" hidden><svg viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13M10 11v6M14 11v6"/></svg></button>
+        <span class="rec-dot"></span><b id="rec-time">0:00</b>
+        <span class="rec-hint" id="rec-hint">اسحب للإلغاء</span>
+        <button class="rec-btn" id="rec-pause" type="button" aria-label="إيقاف مؤقت" hidden><svg class="i-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14"/></svg><svg class="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+      </div>
+      <div class="rec-lock" id="rec-lock" hidden><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><svg viewBox="0 0 24 24"><path d="m7 14 5-5 5 5"/></svg></div>
+    </div>
+  </section>
+
+  <!-- 6) إعدادات الحساب -->
+  <section class="screen main" id="s-account" hidden>
+    <header class="topbar chat-head">
+      <button class="back" id="acc-back" aria-label="رجوع"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <h1>إعدادات الحساب</h1>
+    </header>
+    <div class="sub-body">
+      <div class="cover" id="acc-cover">
+        <div class="cover-actions">
+          <button class="cover-btn" id="cover-del" type="button" hidden>حذف</button>
+          <button class="cover-btn" id="cover-add" type="button">إضافة خلفية</button>
+        </div>
+      </div>
+      <button class="acc-av" id="acc-avatar-btn" type="button" aria-label="تغيير الصورة">
+        <div class="avatar" id="acc-avatar"></div>
+        <span class="cam"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3v11H4Z"/><circle cx="12" cy="13" r="3.2"/></svg></span>
+      </button>
+      <label class="flabel" for="acc-first">الاسم</label>
+      <input class="field" id="acc-first" autocomplete="given-name" maxlength="40">
+      <label class="flabel" for="acc-last">اسم العائلة</label>
+      <input class="field" id="acc-last" autocomplete="family-name" maxlength="40">
+      <label class="flabel" for="acc-user">اسم المستخدم</label>
+      <input class="field ltr" id="acc-user" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="20">
+      <p class="avail" id="acc-avail" hidden></p>
+      <label class="flabel" for="acc-phone">رقم الهاتف (اختياري)</label>
+      <input class="field ltr" id="acc-phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="+964 ...">
+      <label class="flabel" for="acc-bio">الوصف</label>
+      <textarea class="field area" id="acc-bio" maxlength="140" placeholder="اكتب نبذة عنك"></textarea>
+      <button class="btn primary" id="acc-save">حفظ التغييرات</button>
+    </div>
+  </section>
+
+  <!-- 7) ملف شخص ثاني -->
+  <section class="screen main" id="s-user" hidden>
+    <header class="topbar chat-head">
+      <button class="back" id="user-back" aria-label="رجوع"><svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <h1>الملف الشخصي</h1>
+    </header>
+    <div class="sub-body center">
+      <div class="cover" id="user-cover"><div class="cover-actions"><button class="cover-btn more" id="user-more" type="button" aria-label="خيارات"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="5" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="12" cy="19" r="1.7"/></svg></button></div></div>
+      <div class="avatar big" id="user-avatar"></div>
+      <h2 id="user-name"></h2>
+      <div class="actions">
+        <button class="act" id="u-video" type="button"><span><svg viewBox="0 0 24 24"><rect x="3" y="6" width="12" height="12" rx="3"/><path d="m15 10 6-3v10l-6-3"/></svg></span><small>مكالمة مرئية</small></button>
+        <button class="act" id="u-call" type="button"><span><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1Z"/></svg></span><small>مكالمة</small></button>
+        <button class="act" id="u-mute" type="button"><span><svg viewBox="0 0 24 24"><path d="M6 17h12l-1.5-2V10a4.5 4.5 0 0 0-9 0v5Z"/><path d="M10 20h4"/></svg></span><small>كتم</small></button>
+        <button class="act" id="user-msg" type="button"><span><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4Z"/></svg></span><small>مراسلة</small></button>
+      </div>
+      <div class="info" id="user-info"></div>
+    </div>
+  </section>
+
+  <!-- ورقة صورة الملف -->
+  <div class="overlay" id="photo-overlay" hidden>
+    <div class="photo-top"><div class="avatar big" id="photo-top-avatar"></div></div>
+    <div class="bottom-sheet">
+      <div class="grab"></div>
+      <h3>صورة الملف</h3>
+      <button class="row" id="act-camera"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3v11H4Z"/><circle cx="12" cy="13" r="3.2"/></svg><span>التقاط صورة</span></button>
+      <button class="row" id="act-gallery"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9.5" r="1.6"/><path d="m5 18 5-5 3 3 2-2 4 4"/></svg><span>اختيار من الاستوديو</span></button>
+      <button class="row danger" id="act-delete"><svg viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13M10 11v6M14 11v6"/></svg><span>حذف الصورة</span></button>
+    </div>
+  </div>
+
+  <!-- شاشة ضبط الصورة -->
+  <div class="overlay crop" id="crop-overlay" hidden>
+    <div class="crop-card">
+      <div class="crop-head">
+        <button class="txt muted" id="crop-cancel">إلغاء</button>
+        <h3>ضبط الصورة</h3>
+        <button class="txt blue" id="crop-save-top">حفظ</button>
+      </div>
+      <div class="crop-stage" id="crop-stage">
+        <canvas id="crop-canvas" width="600" height="600"></canvas>
+        <div class="crop-ring"></div>
+      </div>
+      <div class="zoom">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4M8.5 11h5"/></svg>
+        <input type="range" id="zoom" min="1" max="3" step="0.01" value="1">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4M8.5 11h5M11 8.5v5"/></svg>
+      </div>
+      <button class="btn primary" id="crop-save">حفظ الصورة</button>
+    </div>
+  </div>
+
+  <!-- إرفاق -->
+  <div class="overlay" id="attach-overlay" hidden>
+    <div class="photo-top"></div>
+    <div class="bottom-sheet">
+      <div class="grab"></div>
+      <h3>إرسال</h3>
+      <button class="row" id="att-image"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9.5" r="1.6"/><path d="m5 18 5-5 3 3 2-2 4 4"/></svg><span>صورة من المعرض</span></button>
+      <button class="row" id="att-video"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="12" height="12" rx="3"/><path d="m15 10 6-3v10l-6-3"/></svg><span>فيديو</span></button>
+      <button class="row" id="att-file"><svg viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7Z"/><path d="M14 3v5h5"/></svg><span>ملف</span></button>
+      <button class="row" id="att-location"><svg viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg><span>مشاركة موقعي</span></button>
+    </div>
+  </div>
+
+  <!-- معاينة الصورة قبل الإرسال -->
+  <div class="overlay crop" id="img-overlay" hidden>
+    <div class="crop-card">
+      <div class="crop-head"><button class="txt muted" id="img-cancel">إلغاء</button><h3 id="img-title">إرسال صورة</h3><span></span></div>
+      <div class="img-prev"><img id="img-prev" alt="معاينة الصورة"></div>
+      <input class="field cap" id="img-cap" placeholder="أضف وصفاً (اختياري)" maxlength="500" autocomplete="off">
+      <button class="btn primary" id="img-send">إرسال</button>
+    </div>
+  </div>
+
+  <!-- معاينة الخلفية -->
+  <div class="overlay crop" id="cover-overlay" hidden>
+    <div class="crop-card">
+      <div class="crop-head"><button class="txt muted" id="cover-cancel">إلغاء</button><h3>خلفية الملف</h3><span></span></div>
+      <div class="cover-stage" id="cover-stage"><canvas id="cover-canvas" width="1080" height="600"></canvas></div>
+      <div class="zoom">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4M8.5 11h5"/></svg>
+        <input type="range" id="cover-zoom" min="1" max="3" step="0.01" value="1">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4M8.5 11h5M11 8.5v5"/></svg>
+      </div>
+      <p class="hint small center">اسحب الصورة وكبّرها حتى تحدد الجزء اللي تريده.</p>
+      <button class="btn primary" id="cover-save">تحديد الصورة كخلفية</button>
+    </div>
+  </div>
+
+  <!-- إضافة قصة: كاميرا + صورة + مقطع مرئي + مباشر -->
+  <div class="overlay story-cam" id="sc-overlay" hidden>
+    <div class="sc-screen">
+      <video id="sc-video" autoplay playsinline muted></video>
+      <div class="sc-fallback" id="sc-fallback" hidden>
+        <svg viewBox="0 0 24 24"><rect x="3" y="6" width="12" height="12" rx="3"/><path d="m15 10 6-3v10l-6-3"/></svg>
+        <p>تعذر فتح الكاميرا. تقدر تختار من المعرض.</p>
+      </div>
+
+      <div class="sc-top" id="sc-top">
+        <button class="sc-ic" id="sc-back" aria-label="رجوع"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+        <div class="sc-user" id="sc-user"><div class="avatar" id="sc-av"></div><div><b id="sc-name"></b><small>قصتك</small></div></div>
+        <span class="sc-timer" id="sc-timer" hidden>00:00</span>
+        <button class="sc-ic" id="sc-flash" aria-label="الفلاش"><svg viewBox="0 0 24 24"><path d="M13 3 5 13h6l-1 8 8-10h-6Z"/></svg></button>
+        <button class="sc-ic" id="sc-grid" aria-label="الشبكة"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 4v16M4 12h16"/></svg></button>
+      </div>
+      <div class="sc-gridlines" id="sc-gridlines" hidden></div>
+
+      <!-- أزرار الالتقاط -->
+      <div class="sc-mid" id="sc-mid">
+        <button class="sc-thumb" id="sc-gallery" aria-label="المعرض"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9.5" r="1.6"/><path d="m5 18 5-5 3 3 2-2 4 4"/></svg></button>
+        <button class="sc-shutter" id="sc-shutter" aria-label="التقاط"><i></i></button>
+        <button class="sc-flip" id="sc-flip" aria-label="قلب الكاميرا"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 0 1-13.7 5.6L4 15.5M4 20v-4.5h4.5"/></svg></button>
+      </div>
+
+      <!-- زر البث المباشر -->
+      <div class="sc-live" id="sc-live" hidden>
+        <button class="btn live-btn" id="sc-live-go">ابدأ البث المباشر</button>
+        <button class="sc-ic sc-live-flip" id="sc-live-flip" aria-label="قلب الكاميرا"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 0 1-13.7 5.6L4 15.5M4 20v-4.5h4.5"/></svg></button>
+      </div>
+
+    </div>
+
+    <div class="sc-modes" id="sc-modes">
+      <button class="sc-gear" id="sc-gear" aria-label="الإعدادات"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M5.6 18.4l1.8-1.8M16.6 7.4l1.8-1.8"/></svg></button>
+      <button class="sc-mode" data-mode="video">مقطع مرئي</button>
+      <button class="sc-mode" data-mode="photo">صورة</button>
+      <button class="sc-mode" data-mode="live">مباشر</button>
+    </div>
+  </div>
+
+  <!-- محرر القصة (بعد الالتقاط أو الاختيار من المعرض) -->
+  <div class="overlay story-edit" id="se-overlay" hidden data-mode="main">
+    <div class="se-top" id="se-top">
+      <button class="sc-ic" id="se-back" aria-label="رجوع"><svg viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+      <h3 id="se-title">قصة جديدة</h3>
+      <button class="sc-ic" id="se-save" aria-label="حفظ على الجهاز"><svg viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></svg></button>
+    </div>
+    <div class="se-top se-top-draw" id="se-top-draw">
+      <button class="sc-ic" id="se-undo" aria-label="تراجع"><svg viewBox="0 0 24 24"><path d="M9 8 4 13l5 5M4 13h10a6 6 0 0 1 0 0 6 6 0 0 1 6 6"/></svg></button>
+      <button class="se-txtbtn" id="se-clear">مسح الكل</button>
+    </div>
+    <div class="se-top se-top-text" id="se-top-text">
+      <button class="se-txtbtn" id="se-txt-del">مسح</button>
+      <button class="se-txtbtn" id="se-txt-ok">تم</button>
+    </div>
+
+    <div class="se-stage" id="se-stage">
+      <div class="se-media" id="se-media">
+        <img id="se-img" alt="">
+        <video id="se-vid" playsinline loop muted autoplay></video>
+        <canvas id="se-draw"></canvas>
+        <div class="se-layers" id="se-layers"></div>
+      </div>
+      <input type="range" id="se-size" min="3" max="40" value="10" aria-label="حجم الفرشاة">
+      <div class="se-trash" id="se-trash"><svg viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"/></svg></div>
+      <div class="se-capbar" id="se-capbar">
+        <input id="se-cap" placeholder="إضافة وصف..." maxlength="500" autocomplete="off">
+        <span class="se-24" title="القصة تبقى 24 ساعة">24</span>
+      </div>
+    </div>
+
+    <!-- لوحة الألوان -->
+    <div class="se-palette" id="se-palette" hidden></div>
+
+    <!-- أدوات الرسم: أنواع الفرشاة -->
+    <div class="se-brushes" id="se-brushes" hidden>
+      <button class="se-color" id="se-color" aria-label="اللون"></button>
+      <button class="se-br" data-b="pen" aria-label="قلم"><svg viewBox="0 0 24 24"><path d="m4 20 1-4L16 5l3 3L8 19Z"/></svg></button>
+      <button class="se-br" data-b="arrow" aria-label="سهم"><svg viewBox="0 0 24 24"><path d="M5 19 19 5M10 5h9v9"/></svg></button>
+      <button class="se-br" data-b="marker" aria-label="ماركر"><svg viewBox="0 0 24 24"><path d="m5 15 8-8 4 4-8 8H5ZM13 7l2-2 4 4-2 2"/></svg></button>
+      <button class="se-br" data-b="neon" aria-label="نيون"><svg viewBox="0 0 24 24"><path d="M12 3v3M5 6l2 2M19 6l-2 2M8 14a4 4 0 1 1 8 0c0 2-1 2.5-1 4H9c0-1.5-1-2-1-4Z"/></svg></button>
+      <button class="se-br" data-b="eraser" aria-label="ممحاة"><svg viewBox="0 0 24 24"><path d="m4 15 8-9 7 6-6 7H8ZM8 20h12"/></svg></button>
+      <button class="se-br" id="se-more" aria-label="ألوان أكثر"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+    </div>
+
+    <!-- أدوات النص -->
+    <div class="se-textbar" id="se-textbar" hidden>
+      <button class="se-color" id="se-tcolor" aria-label="لون النص"></button>
+      <button class="se-ic2" id="se-talign" aria-label="محاذاة"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h16"/></svg></button>
+      <button class="se-ic2" id="se-tstyle" aria-label="نمط"><svg viewBox="0 0 24 24"><path d="m6 19 6-14 6 14M8.5 14h7"/></svg></button>
+      <button class="se-ic2" id="se-temoji" aria-label="إيموجي"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M9 10v.5M15 10v.5M8.5 14a4.5 4.5 0 0 0 7 0"/></svg></button>
+      <select id="se-font" aria-label="الخط">
+        <option value="">افتراضي</option><option value="serif">Serif</option><option value="monospace">Mono</option><option value="cursive">Cursive</option><option value="fantasy">Fantasy</option>
+      </select>
+    </div>
+
+    <!-- الملصقات -->
+    <div class="se-stickers" id="se-stickers" hidden></div>
+
+    <!-- تعديل الألوان -->
+    <div class="se-adjust" id="se-adjust" hidden>
+      <label><span>السطوع</span><input type="range" id="se-adj-b" min="50" max="150" value="100"></label>
+      <label><span>التباين</span><input type="range" id="se-adj-c" min="50" max="150" value="100"></label>
+      <label><span>التشبع</span><input type="range" id="se-adj-s" min="0" max="200" value="100"></label>
+      <button class="se-txtbtn" id="se-adj-reset">إعادة ضبط</button>
+    </div>
+
+    <!-- التبويبات في وضع التحرير -->
+    <div class="se-tabs" id="se-tabs" hidden>
+      <button class="se-ic2" id="se-cancel" aria-label="إلغاء"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      <button class="se-tab" data-m="draw">رسم</button>
+      <button class="se-tab" data-m="sticker">ملصق</button>
+      <button class="se-tab" data-m="text">نص</button>
+      <button class="se-ic2" id="se-done" aria-label="تم"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button>
+    </div>
+
+    <!-- الأدوات الرئيسية + التالي -->
+    <div class="se-tools" id="se-tools">
+      <button class="se-ic2" data-go="draw" aria-label="رسم"><svg viewBox="0 0 24 24"><path d="M20 4c-4 0-8 4-9.5 8l2.5 2.5C17 13 20 9 20 4ZM10.5 12.5c-3 0-4 2-4 4 0 1.5-1 2.5-2.5 3 3 1 7 0 8-3.5"/></svg></button>
+      <button class="se-ic2" data-go="sticker" aria-label="ملصق"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 0-8 8c4.5 0 8-3.5 8-8ZM12 20v-4a4 4 0 0 1 4-4h4"/><path d="M9 10v.5M14 9v.5M8.5 14a4 4 0 0 0 3 1"/></svg></button>
+      <button class="se-ic2" data-go="text" aria-label="نص"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8.5 9V8h7v1M12 8v8M10.5 16h3"/></svg></button>
+      <button class="se-ic2" data-go="adjust" aria-label="تعديل"><svg viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9M13 4v6M7 14v6"/></svg></button>
+      <button class="se-next" id="se-next">التالي <svg viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></svg></button>
+    </div>
+
+    <div class="se-busy" id="se-busy" hidden><div class="se-spin"></div><p id="se-busy-t">جاري التجهيز…</p></div>
+  </div>
+
+  <!-- إعدادات الكاميرا -->
+  <div class="overlay" id="scs-overlay" hidden>
+    <div class="photo-top"></div>
+    <div class="bottom-sheet">
+      <div class="grab"></div>
+      <h3>إعدادات الكاميرا</h3>
+      <p class="hint small">دقة الالتقاط (تنطبق عند فتح الكاميرا). الأفضل 1080.</p>
+      <div class="scs-seg" id="scs-q">
+        <button data-q="720">720p</button><button data-q="1080">1080p</button><button data-q="4k">4K</button>
+      </div>
+      <p class="hint small" id="scs-actual"></p>
+      <button class="row" id="scs-sub"><svg viewBox="0 0 24 24"><path d="m12 3 2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-3-5.3 3 1.1-6L3.4 9.4l6-.8Z"/></svg><span>اشتراك ليكو Praises</span></button>
+    </div>
+  </div>
+
+  <!-- اشتراك البث المباشر -->
+  <div class="overlay" id="sub-overlay" hidden>
+    <div class="photo-top"></div>
+    <div class="bottom-sheet sub-sheet">
+      <div class="grab"></div>
+      <div class="sub-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.4"/><path d="M7.8 7.8a5.9 5.9 0 0 0 0 8.4M16.2 7.8a5.9 5.9 0 0 1 0 8.4M4.9 4.9a10 10 0 0 0 0 14.2M19.1 4.9a10 10 0 0 1 0 14.2"/></svg></div>
+      <h3 id="sub-title">البث المباشر</h3>
+      <p class="hint" id="sub-text">قم بتفعيل الاشتراك <b>Permni</b> للحصول على الميزة - البث المباشر</p>
+      <button class="btn primary" id="sub-go">تفعيل الاشتراك</button>
+      <button class="txt muted sub-later" id="sub-later">لاحقاً</button>
+    </div>
+  </div>
+
+  <!-- عارض القصص -->
+  <div class="overlay story-view" id="story-overlay" hidden>
+    <div class="story-bars" id="story-bars"></div>
+    <div class="story-head">
+      <div class="avatar" id="story-av"></div>
+      <div><b id="story-name"></b><small id="story-time"></small></div>
+      <button id="story-del" aria-label="حذف القصة" hidden><svg viewBox="0 0 24 24"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"/></svg></button>
+      <button id="story-close" aria-label="إغلاق"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="story-stage" id="story-stage"><img id="story-img" alt="قصة"><video id="story-vid" playsinline></video></div>
+    <p class="story-cap" id="story-cap" hidden></p>
+  </div>
+
+  <!-- عرض الصورة كاملة -->
+  <div class="overlay view" id="view-overlay" hidden><img id="view-img" alt="صورة"></div>
+
+  <!-- رابط خارجي -->
+  <div class="overlay" id="link-overlay" hidden>
+    <div class="photo-top"></div>
+    <div class="bottom-sheet">
+      <div class="grab"></div>
+      <h3>رابط خارجي</h3>
+      <p class="link-url" id="link-url"></p>
+      <p class="hint small">الرابط يفتح بالمتصفح، لأن المواقع ما تنفتح داخل التطبيق.</p>
+      <button class="row" id="link-open"><svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5H5V6h5"/></svg><span>فتح الرابط</span></button>
+      <button class="row" id="link-copy"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5H5v11h3"/></svg><span>نسخ الرابط</span></button>
+    </div>
+  </div>
+
+  <!-- وضع الخصوصية (من ثلاث نقاط ملف الشخص) -->
+  <div class="overlay" id="priv-overlay" hidden>
+    <div class="photo-top"></div>
+    <div class="bottom-sheet">
+      <div class="grab"></div>
+      <h3>وضع الخصوصية</h3>
+      <p class="hint small">إذا فعّلته لهذا الشخص: أي محاولة منه لتصوير أو تسجيل شاشة مكالمتك تنقفل شاشته ويوصلك إشعار فوراً. الحالة الحالية: <b id="priv-state"></b></p>
+      <button class="row" id="priv-toggle"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><span id="priv-toggle-t"></span></button>
+    </div>
+  </div>
+
+  <!-- مساعد قواعد Firebase -->
+  <div class="overlay" id="rules-overlay" hidden>
+    <div class="photo-top"></div>
+    <div class="bottom-sheet">
+      <div class="grab"></div>
+      <h3>لازم تنشر القواعد</h3>
+      <p class="hint small">قاعدة البيانات ترفض المكالمات والبصمات والصور لأن القواعد الجديدة ما اننشرت بعد. اضغط «نسخ القواعد»، ثم «فتح Firebase»، امسح القديم والصق الجديد واضغط Publish.</p>
+      <button class="row" id="rules-copy"><svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5H5v11h3"/></svg><span>نسخ القواعد</span></button>
+      <button class="row" id="rules-open"><svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-9 9M18 14v5H5V6h5"/></svg><span>فتح Firebase</span></button>
+    </div>
+  </div>
+
+  <!-- طلب الإشعارات -->
+  <div class="overlay" id="notif-overlay" hidden>
+    <div class="photo-top"></div>
+    <div class="bottom-sheet">
+      <div class="grab"></div>
+      <h3>تفعيل الإشعارات</h3>
+      <p class="hint small">حتى توصلك الرسائل والمكالمات الواردة بصوت وإشعار حتى لو التطبيق بالخلفية.</p>
+      <button class="row" id="notif-yes"><svg viewBox="0 0 24 24"><path d="M6 17h12l-1.5-2V10a4.5 4.5 0 0 0-9 0v5Z"/><path d="M10 20h4"/></svg><span>تفعيل</span></button>
+      <button class="row" id="notif-no"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg><span>لاحقاً</span></button>
+    </div>
+  </div>
+
+  <!-- شاشة المكالمة -->
+  <div class="call-ui" id="call-ui" hidden>
+    <div class="call-bg" id="call-bg"></div>
+    <video id="call-remote" autoplay playsinline></video>
+    <div class="call-top">
+      <div class="avatar big" id="call-avatar"></div>
+      <h2 id="call-name"></h2>
+      <p id="call-status"></p>
+      <p class="call-priv" id="call-priv" hidden><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg> وضع الخصوصية مفعّل</p>
+    </div>
+    <video id="call-local" autoplay playsinline muted></video>
+    <div class="call-ctrl" id="call-ctrl">
+      <button class="cbtn" id="c-cam" type="button" aria-label="إيقاف الكاميرا"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="12" height="12" rx="3"/><path d="m15 10 6-3v10l-6-3"/></svg></button>
+      <button class="cbtn" id="c-mic" type="button" aria-label="كتم المايك"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+      <button class="cbtn" id="c-share" type="button" aria-label="مشاركة الشاشة"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="15" height="13" rx="2"/><path d="M8 21h5M10.5 17v4M14 9l3-3 3 3M17 6v8"/></svg></button>
+      <button class="cbtn" id="c-flash" type="button" aria-label="الإضاءة"><svg viewBox="0 0 24 24"><path d="m13 2-9 12h7l-1 8 10-13h-7Z"/></svg></button>
+
+      <button class="cbtn hang" id="c-hang" type="button" aria-label="إنهاء"><svg viewBox="0 0 24 24" style="transform:rotate(135deg)"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1Z"/></svg></button>
+    </div>
+    <div class="call-ctrl wide" id="call-in-ctrl" hidden>
+      <button class="cbtn hang" id="c-decline" type="button" aria-label="رفض"><svg viewBox="0 0 24 24" style="transform:rotate(135deg)"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1Z"/></svg></button>
+      <button class="cbtn accept" id="c-accept" type="button" aria-label="رد"><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1Z"/></svg></button>
+    </div>
+    <div class="call-lock" id="call-lock" hidden>
+      <svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+      <h3 id="call-lock-t">الشاشة مقفلة</h3>
+      <p>وضع الخصوصية مفعّل من الطرف الثاني، وتم إبلاغه.</p>
+      <button class="btn primary" id="call-unlock" type="button">متابعة</button>
+    </div>
+    <div class="call-alert" id="call-alert" hidden></div>
+  </div>
+
+  <input type="file" id="file-gallery" accept="image/*" hidden>
+  <input type="file" id="file-camera" accept="image/*" capture="user" hidden>
+  <input type="file" id="file-story" accept="image/*,video/*" hidden>
+  <input type="file" id="file-cover" accept="image/*" hidden>
+  <input type="file" id="file-img" accept="image/*" hidden>
+  <input type="file" id="file-video" accept="video/*" hidden>
+  <input type="file" id="file-any" hidden>
+  <div class="toast" id="toast" hidden></div>
+</div>
+<script src="js/config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="js/local-api.js"></script>
+<script src="js/firebase-api.js"></script>
+<script src="js/core.js"></script>
+<script src="js/router.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/profile.js"></script>
+<script src="js/cropper.js"></script>
+<script src="js/media.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/account.js"></script>
+<script src="js/stories.js"></script>
+<script src="js/story-edit.js"></script>
+<script src="js/story-cam.js"></script>
+<script src="js/nav.js"></script>
+<script src="js/menu.js"></script>
+<script src="js/calls.js"></script>
+<script src="js/voice.js"></script>
+<script src="js/rt.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>

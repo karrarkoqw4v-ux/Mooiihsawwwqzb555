@@ -1,0 +1,21 @@
+/* base.css — الألوان والخطوط والأساسيات */
+/* ===== محادثة — الأنماط (مطابقة لتصميم الصور) ===== */
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap");
+:root{
+  --bg:#10151c;--card:#19212b;--card-line:#2c3745;--head:#1a4f8b;--head2:#2f78c4;
+  --field:#222e3b;--text:#e9eef5;--muted:#8896a6;--blue:#2a7abf;--link:#4aa3e0;--danger:#e0484f;--sheet:#222e3b;
+  --font:"IBM Plex Sans Arabic","Noto Sans Arabic","Segoe UI",Tahoma,system-ui,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--font)}
+button,input{font-family:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+svg{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+[hidden]{display:none!important}
+
+#app{min-height:100%;display:flex;justify-content:center;align-items:center;
+  padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom))}
+.screen{width:100%;max-width:400px}
+.screen.main{max-width:none;height:100vh;height:100dvh;padding:0;display:flex;flex-direction:column;
+  position:fixed;inset:0;background:var(--bg)}
+
