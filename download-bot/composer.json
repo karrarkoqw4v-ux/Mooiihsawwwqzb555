@@ -1,0 +1,5 @@
+{
+  "name": "local/download-bot",
+  "description": "Telegram media downloader bot (PHP + yt-dlp)",
+  "require": { "php": ">=8.0", "ext-curl": "*", "ext-json": "*", "guzzlehttp/guzzle": "^7.8" }
+}
