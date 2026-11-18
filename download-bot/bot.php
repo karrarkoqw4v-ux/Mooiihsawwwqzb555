@@ -6,9 +6,10 @@ use GuzzleHttp\Client;
 $cfg = require __DIR__ . '/config.php';
 
 // التحقق من أن الطلب قادم من تيليجرام
-if (($_SERVER['HTTP_X_TELEGRAM_BOT_API_SECRET_TOKEN'] ?? '') !== $cfg['secret']) { http_response_code(403); exit; }
+$cli = PHP_SAPI === 'cli';   // وضع Polling: التحديث يأتي من stdin
+if (!$cli && ($_SERVER['HTTP_X_TELEGRAM_BOT_API_SECRET_TOKEN'] ?? '') !== $cfg['secret']) { http_response_code(403); exit; }
 
-$update = json_decode(file_get_contents('php://input'), true);
+$update = json_decode(file_get_contents($cli ? 'php://stdin' : 'php://input'), true);
 if (!$update) exit;
 
 // إنهاء الاستجابة فوراً حتى لا يعيد تيليجرام إرسال التحديث أثناء التحميل

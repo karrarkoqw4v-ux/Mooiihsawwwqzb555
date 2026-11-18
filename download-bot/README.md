@@ -14,3 +14,9 @@ php set_webhook.php https://دومينك/download-bot/bot.php
 - أضف البوت **مشرفاً** في قنوات الاشتراك الإجباري.
 - يجب أن يعمل الخادم بـ HTTPS (تيليجرام يشترطه). حدّث yt-dlp دورياً: `yt-dlp -U`.
 - لتجاوز حد 50MB: شغّل Local Bot API Server (حتى 2GB).
+
+## تشغيل سريع بدون HTTPS (Polling)
+```bash
+BOT_TOKEN=... FORCE_CHANNELS=@chan1 php poll.php
+```
+مناسب لأي VPS أو جهاز؛ للتشغيل الدائم استخدم `nohup php poll.php &` أو systemd.
