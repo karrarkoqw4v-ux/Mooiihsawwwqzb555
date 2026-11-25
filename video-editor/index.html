@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>محرر الفيديو</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="brand">🎬 محرر الفيديو</div>
+  <div class="tools">
+    <button id="bUndo" title="تراجع (Ctrl+Z)">↶</button>
+    <button id="bRedo" title="إعادة (Ctrl+Y)">↷</button>
+    <button id="bSplit" title="تقسيم (S)">✂ تقسيم</button>
+    <button id="bDup" title="تكرار (Ctrl+D)">⧉ تكرار</button>
+    <button id="bDel" title="حذف (Delete)">🗑 حذف</button>
+    <select id="ratio" title="نسبة العرض">
+      <option value="16:9">16:9</option><option value="9:16">9:16</option>
+      <option value="1:1">1:1</option><option value="4:3">4:3</option>
+      <option value="3:4">3:4</option><option value="21:9">21:9</option>
+    </select>
+  </div>
+  <button id="bProj">📁 المشاريع</button>
+  <button id="bSet">⚙</button>
+  <button id="bExport" class="primary">⬇ تصدير</button>
+</header>
+
+<main>
+  <aside id="left">
+    <nav id="tabs">
+      <button data-tab="media" class="on">الوسائط</button>
+      <button data-tab="audio">صوت</button>
+      <button data-tab="text">نص</button>
+      <button data-tab="stickers">ملصقات</button>
+      <button data-tab="filters">فلاتر</button>
+      <button data-tab="fx">تأثيرات</button>
+      <button data-tab="ai">ذكاء</button>
+    </nav>
+    <section id="tab-media" class="tab on">
+      <label class="btn big">＋ استيراد (فيديو / صورة / صوت)
+        <input id="file" type="file" accept="video/*,image/*,audio/*" multiple hidden>
+      </label>
+      <div id="lib" class="grid"></div>
+      <p class="hint">اضغط على العنصر لإضافته إلى الخط الزمني.</p>
+    </section>
+    <section id="tab-audio" class="tab">
+      <button id="bRec" class="btn">🎙 تسجيل تعليق صوتي</button>
+      <button id="bExtract" class="btn">🔊 استخراج الصوت من المقطع المحدد</button>
+      <h4 class="sub">مؤثرات صوتية (مولَّدة)</h4><div id="sfx" class="list"></div>
+    </section>
+    <section id="tab-text" class="tab"><div id="textPresets" class="list"></div></section>
+    <section id="tab-stickers" class="tab"><div id="stk" class="grid emoji"></div></section>
+    <section id="tab-ai" class="tab"><div id="ai" class="list"></div></section>
+    <section id="tab-filters" class="tab"><div id="flt" class="grid"></div><p class="hint">حدّد مقطعاً ثم اختر الفلتر.</p></section>
+    <section id="tab-fx" class="tab"><div id="fx" class="list"></div><p class="hint">حدّد مقطعاً ثم اختر التأثير.</p></section>
+  </aside>
+
+  <section id="center">
+    <div id="stage"><canvas id="cv"></canvas></div>
+    <div id="transport">
+      <button id="bPlay">▶</button>
+      <span id="tc">00:00.0 / 00:00.0</span>
+      <span class="sp"></span>
+      <label>تكبير <input id="zoom" type="range" min="10" max="300" value="60" dir="ltr"></label>
+    </div>
+  </section>
+
+  <aside id="right"><div id="props"><p class="hint">حدّد مقطعاً من الخط الزمني لتعديل خصائصه.</p></div></aside>
+</main>
+
+<section id="timeline">
+  <div id="tlScroll" dir="ltr">
+    <div id="tlInner">
+      <div id="ruler"></div>
+      <div id="lanes"></div>
+      <div id="playhead"></div>
+    </div>
+  </div>
+</section>
+
+<div id="overlay" hidden><div class="box"><div id="ovTxt">جاري التصدير…</div><progress id="prog" max="100" value="0"></progress><small>أبقِ هذا التبويب ظاهراً حتى ينتهي التصدير.</small><button id="ovCancel">إلغاء</button></div></div>
+<div id="toast" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>
