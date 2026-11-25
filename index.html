@@ -1,178 +1,110 @@
 <title>منصة أستاذ حسين ماجد</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap">
 <style>
-/* Layout: one phone-sized screen centered on a soft backdrop; screens swap in place (home -> role form) */
+/* Layout: One UI style. Large title zone on top, grouped rounded cards below, pill buttons */
 :root{
-  --bg:#eef2f7; --card:#ffffff; --ink:#12263f; --muted:#5f7087;
-  --brand:#1b4b82; --brand-2:#2f7bd0; --gold:#f2b134; --line:#d9e1ec;
-  --ok:#17803d; --ok-bg:#e3f5e9; --err:#b3261e; --err-bg:#fdeceb;
-  --hero-a:#12355f; --hero-b:#1f5fa8; --field:#f6f8fb;
-  --font-d:'Cairo','Segoe UI',Tahoma,sans-serif; --font-b:'Tajawal','Segoe UI',Tahoma,sans-serif;
+  --bg:#f2f3f7; --card:#ffffff; --ink:#111318; --muted:#7b8190; --accent:#3e91ff; --accent-ink:#ffffff;
+  --field:#f2f3f7; --line:#eceef3; --ok:#12a150; --ok-bg:#e2f6ea; --err:#d93025; --err-bg:#fdeceb;
+  --c1:#3e91ff; --c2:#34c38f; --c3:#ff9f43; --frame:#dfe3ea;
+  --font:'Tajawal','Segoe UI',Tahoma,sans-serif;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0c1624; --card:#142237; --ink:#e8eef7; --muted:#92a3ba; --brand:#6fa8ee; --brand-2:#4a8fe0;
-  --line:#253853; --ok:#6fd297; --ok-bg:#12301f; --err:#ff9a92; --err-bg:#3a1917; --hero-a:#0e2a4a; --hero-b:#17487f; --field:#0f1c2e; color-scheme:dark}}
+  --bg:#000; --card:#1c1d21; --ink:#f3f4f7; --muted:#8e94a3; --field:#2a2b31; --line:#2a2b31; --frame:#0c0d10;
+  --ok:#5fd68c; --ok-bg:#12301f; --err:#ff8f86; --err-bg:#3a1917; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0c1624; --card:#142237; --ink:#e8eef7; --muted:#92a3ba; --brand:#6fa8ee; --brand-2:#4a8fe0;
-  --line:#253853; --ok:#6fd297; --ok-bg:#12301f; --err:#ff9a92; --err-bg:#3a1917; --hero-a:#0e2a4a; --hero-b:#17487f; --field:#0f1c2e; color-scheme:dark}
-
+  --bg:#000; --card:#1c1d21; --ink:#f3f4f7; --muted:#8e94a3; --field:#2a2b31; --line:#2a2b31; --frame:#0c0d10;
+  --ok:#5fd68c; --ok-bg:#12301f; --err:#ff8f86; --err-bg:#3a1917; color-scheme:dark}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--font-b);font-size:16px;direction:rtl;
-  padding-block:24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-.phone{max-width:420px;margin:0 auto;background:var(--card);border-radius:28px;overflow:hidden;
-  box-shadow:0 18px 50px rgba(18,38,63,.18);min-height:720px;display:flex;flex-direction:column}
-.hero{background:linear-gradient(160deg,var(--hero-a),var(--hero-b));color:#fff;padding:36px 24px 56px;position:relative}
-.hero.small{padding:20px 24px 44px}
-.logo{width:68px;height:68px;border-radius:20px;background:#fff;display:grid;place-items:center;margin-bottom:16px;
-  box-shadow:0 6px 16px rgba(0,0,0,.2)}
-.hero.small .logo{width:48px;height:48px;border-radius:14px;margin-bottom:10px}
-.hero h1{font-family:var(--font-d);font-weight:800;font-size:27px;line-height:1.3;margin:0 0 6px;text-wrap:balance}
-.hero.small h1{font-size:21px}
-.hero p{margin:0;opacity:.85;font-size:15px}
-.hero::after{content:"";position:absolute;inset-inline:0;bottom:-1px;height:26px;background:var(--card);border-radius:26px 26px 0 0}
-.body{padding:8px 22px 28px;display:flex;flex-direction:column;gap:14px;flex:1;min-width:0}
-.title{font-family:var(--font-d);font-weight:700;font-size:18px;margin:4px 0 0}
-.role{display:flex;align-items:center;gap:14px;width:100%;text-align:right;background:var(--card);color:var(--ink);
-  border:1.5px solid var(--line);border-radius:18px;padding:16px;cursor:pointer;font:inherit;transition:.15s}
-.role:hover,.role:focus-visible{border-color:var(--brand-2);transform:translateY(-1px);box-shadow:0 6px 16px rgba(27,75,130,.12);outline:none}
-.ico{flex:none;width:50px;height:50px;border-radius:15px;display:grid;place-items:center;background:var(--field);color:var(--brand)}
-.role:nth-child(3) .ico{background:#fff4d9;color:#a8710a}
-.role .t{font-family:var(--font-d);font-weight:700;font-size:17px;display:block}
-.role .s{color:var(--muted);font-size:13.5px}
-.role .arr{margin-inline-start:auto;color:var(--muted)}
-.back{background:none;border:0;color:#fff;font:inherit;font-weight:500;cursor:pointer;display:inline-flex;gap:6px;align-items:center;
-  padding:6px 0;margin-bottom:12px;opacity:.9}
-label{display:block;font-weight:700;font-size:14px;margin-bottom:6px}
-input,select{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--field);border:1.5px solid var(--line);
-  border-radius:14px;padding:13px 14px;direction:rtl}
-input:focus,select:focus{outline:none;border-color:var(--brand-2);box-shadow:0 0 0 3px rgba(47,123,208,.2)}
+body{background:var(--frame);color:var(--ink);font-family:var(--font);font-size:16px;direction:rtl;
+  padding-block:20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.phone{max-width:420px;margin:0 auto;background:var(--bg);border-radius:40px;overflow:hidden;min-height:760px;
+  display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.18)}
+.top{padding:28px 24px 0;display:flex;flex-direction:column;justify-content:flex-end;min-height:190px}
+.top.small{min-height:150px;padding-top:20px}
+.logo{width:56px;height:56px;border-radius:50%;background:var(--accent);display:grid;place-items:center;margin-bottom:18px;color:#fff}
+.top h1{font-weight:800;font-size:34px;line-height:1.25;margin:0;text-wrap:balance}
+.top.small h1{font-size:30px}
+.top p{margin:8px 0 0;color:var(--muted);font-size:16px}
+.back{align-self:flex-start;width:44px;height:44px;border-radius:50%;border:0;background:var(--card);color:var(--ink);
+  cursor:pointer;display:grid;place-items:center;margin-bottom:auto}
+.body{padding:24px 16px 28px;display:flex;flex-direction:column;gap:16px;flex:1;min-width:0}
+.list{background:var(--card);border-radius:30px;overflow:hidden}
+.role{display:flex;align-items:center;gap:14px;width:100%;text-align:right;background:none;color:var(--ink);border:0;
+  padding:18px 20px;cursor:pointer;font:inherit;border-bottom:1px solid var(--line)}
+.role:last-child{border-bottom:0}
+.role:active,.role:focus-visible{background:var(--field);outline:none}
+.ico{flex:none;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;color:#fff}
+.role .t{font-weight:700;font-size:18px;display:block}
+.role .s{color:var(--muted);font-size:14px}
+.role .arr{margin-inline-start:auto;color:var(--muted);font-size:22px}
+.card{background:var(--card);border-radius:30px;padding:22px 20px;display:flex;flex-direction:column;gap:16px}
+label{display:block;font-weight:700;font-size:14px;color:var(--muted);margin-bottom:8px;padding-inline:6px}
+input,select{width:100%;font:inherit;font-size:17px;color:var(--ink);background:var(--field);border:2px solid transparent;
+  border-radius:22px;padding:15px 18px;direction:rtl;appearance:none;-webkit-appearance:none}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%237b8190' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:left 18px center}
+input:focus,select:focus{outline:none;border-color:var(--accent)}
 input[dir=ltr]{text-align:left}
 .group{display:flex;flex-direction:column}
-.hint{font-size:12.5px;color:var(--muted);margin-top:5px}
-.btn{font-family:var(--font-d);font-weight:700;font-size:17px;border:0;border-radius:14px;padding:14px;cursor:pointer;
-  background:var(--brand);color:#fff;width:100%;transition:.15s}
-.btn:hover{background:var(--brand-2)}
-.btn.alt{background:var(--gold);color:#3b2700}
-.btn.alt:hover{background:#f7c25a}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.msg{border-radius:14px;padding:12px 14px;font-size:14.5px;display:flex;gap:10px;align-items:flex-start}
+.btn{font-family:var(--font);font-weight:700;font-size:18px;border:0;border-radius:999px;height:58px;cursor:pointer;
+  background:var(--accent);color:var(--accent-ink);width:100%}
+.btn:active{filter:brightness(.92)}
+.btn:disabled{opacity:.5}
+.msg{border-radius:20px;padding:13px 16px;font-size:15px}
 .msg.ok{background:var(--ok-bg);color:var(--ok)} .msg.err{background:var(--err-bg);color:var(--err)}
-.demo{margin-top:auto;font-size:12.5px;color:var(--muted);border-top:1px dashed var(--line);padding-top:12px}
-.demo b{color:var(--ink);font-weight:700}
-.welcome{text-align:center;padding:30px 10px;display:flex;flex-direction:column;align-items:center;gap:10px}
-.welcome .ok{width:70px;height:70px;border-radius:50%;background:var(--ok-bg);color:var(--ok);display:grid;place-items:center}
-.pw{position:relative}.pw button{position:absolute;inset-inline-start:8px;top:50%;transform:translateY(-50%);background:none;border:0;
-  color:var(--muted);cursor:pointer;font:inherit;font-size:13px;padding:6px}
-.pw input{padding-inline-start:56px}
+.demo{font-size:13px;color:var(--muted);text-align:center;padding:0 12px}
+.demo b{color:var(--ink)}
+.welcome{background:var(--card);border-radius:30px;text-align:center;padding:36px 20px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.welcome .okc{width:76px;height:76px;border-radius:50%;background:var(--ok-bg);color:var(--ok);display:grid;place-items:center}
+.welcome h2{margin:6px 0 0;font-size:24px;font-weight:800}
+.welcome p{margin:0;color:var(--muted)}
+.pw{position:relative}.pw button{position:absolute;inset-inline-start:12px;top:50%;transform:translateY(-50%);background:none;border:0;
+  color:var(--accent);cursor:pointer;font:inherit;font-weight:700;font-size:14px;padding:8px}
+.pw input{padding-inline-start:70px}
 [hidden]{display:none!important}
 </style>
-
 <div class="phone" id="app">
-
-  <!-- الشاشة الرئيسية -->
-  <section id="home" style="display:flex;flex-direction:column;flex:1">
-    <div class="hero">
-      <div class="logo" aria-hidden="true">
-        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#1b4b82" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v6"/></svg>
-      </div>
-      <h1>منصة أستاذ حسين ماجد</h1>
-      <p>اختر نوع الدخول للمتابعة</p>
-    </div>
-    <div class="body">
-      <button class="role" data-go="teacher">
-        <span class="ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></span>
-        <span><span class="t">تسجيل دخول المدرس</span><span class="s">البريد الإلكتروني وكلمة السر</span></span>
-        <span class="arr">‹</span>
-      </button>
-      <button class="role" data-go="student">
-        <span class="ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></span>
-        <span><span class="t">تسجيل دخول الطالب</span><span class="s">الاسم الثلاثي والمعرف والصف</span></span>
-        <span class="arr">‹</span>
-      </button>
-      <button class="role" data-go="parent">
-        <span class="ico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><circle cx="17" cy="10" r="2.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5M15 15c3 0 6 1.3 6 4.5"/></svg></span>
-        <span><span class="t">تسجيل دخول ولي الأمر</span><span class="s">متابعة حساب الابن</span></span>
-        <span class="arr">‹</span>
-      </button>
-    </div>
-  </section>
-
-  <!-- المدرس -->
-  <section id="teacher" hidden style="flex-direction:column;flex:1">
-    <div class="hero small">
-      <button class="back" data-go="home">› رجوع</button>
-      <h1>دخول المدرس</h1><p>أدخل بيانات حسابك</p>
-    </div>
-    <form class="body" id="f-teacher" autocomplete="off">
-      <div class="group"><label for="t-email">البريد الإلكتروني</label>
-        <input id="t-email" type="email" dir="ltr" placeholder="name@example.com" required></div>
-      <div class="group"><label for="t-pass">كلمة السر</label>
-        <div class="pw"><input id="t-pass" type="password" dir="ltr" placeholder="••••••" required>
-        <button type="button" data-eye="t-pass">إظهار</button></div></div>
-      <div class="msg err" id="t-err" hidden></div>
-      <button class="btn" type="submit">تسجيل الدخول</button>
-    </form>
-  </section>
-
-  <!-- الطالب -->
-  <section id="student" hidden style="flex-direction:column;flex:1">
-    <div class="hero small">
-      <button class="back" data-go="home">› رجوع</button>
-      <h1>دخول الطالب</h1><p>تحقق من حسابك ثم ادخل</p>
-    </div>
-    <form class="body" id="f-student" autocomplete="off">
-      <div class="group"><label for="s-name">اسم الطالب الثلاثي</label>
-        <input id="s-name" placeholder="مثال: علي حسين محمد" required></div>
-      <div class="group"><label for="s-id">المعرف</label>
-        <input id="s-id" inputmode="numeric" dir="ltr" placeholder="1001" required></div>
-      <div class="group"><label for="s-grade">الصف</label>
-        <select id="s-grade" required>
-          <option value="">اختر الصف</option>
-          <option>الأول متوسط</option><option>الثاني متوسط</option><option>الثالث متوسط</option>
-        </select></div>
-      <div class="msg" id="s-msg" hidden></div>
-      <button class="btn" type="submit" id="s-btn">تحقق</button>
-      <div class="demo">بيانات تجريبية: <b>علي حسين محمد</b> · المعرف <b>1001</b> · <b>الأول متوسط</b></div>
-    </form>
-  </section>
-
-  <!-- ولي الأمر -->
-  <section id="parent" hidden style="flex-direction:column;flex:1">
-    <div class="hero small">
-      <button class="back" data-go="home">› رجوع</button>
-      <h1>دخول ولي الأمر</h1><p>أدخل بياناتك وبيانات ابنك</p>
-    </div>
-    <form class="body" id="f-parent" autocomplete="off">
-      <div class="group"><label for="p-name">اسم ولي الأمر الثلاثي</label>
-        <input id="p-name" placeholder="مثال: حسين محمد كاظم" required></div>
-      <div class="group"><label for="p-child">اسم الابن الثلاثي</label>
-        <input id="p-child" placeholder="مثال: علي حسين محمد" required></div>
-      <div class="group"><label for="p-id">معرف الابن</label>
-        <input id="p-id" inputmode="numeric" dir="ltr" placeholder="1001" required></div>
-      <div class="group"><label for="p-grade">الصف</label>
-        <select id="p-grade" required>
-          <option value="">اختر الصف</option>
-          <option>الأول متوسط</option><option>الثاني متوسط</option><option>الثالث متوسط</option>
-        </select></div>
-      <div class="group"><label for="p-pass">كلمة السر</label>
-        <div class="pw"><input id="p-pass" type="password" dir="ltr" placeholder="••••••" required>
-        <button type="button" data-eye="p-pass">إظهار</button></div></div>
-      <div class="msg err" id="p-err" hidden></div>
-      <button class="btn alt" type="submit">تحقق ودخول</button>
-      <div class="demo">بيانات تجريبية: الابن <b>علي حسين محمد</b> · <b>1001</b> · <b>الأول متوسط</b></div>
-    </form>
-  </section>
-
-  <!-- نجاح الدخول -->
-  <section id="done" hidden style="flex-direction:column;flex:1">
-    <div class="hero small"><h1>منصة أستاذ حسين ماجد</h1><p id="done-sub"></p></div>
-    <div class="body"><div class="welcome">
-      <div class="ok"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
-      <h2 class="title" id="done-title"></h2><p style="color:var(--muted);margin:0" id="done-text"></p>
-    </div>
-    <button class="btn" data-go="home">تسجيل الخروج</button></div>
-  </section>
+<section id="home" style="display:flex;flex-direction:column;flex:1">
+<div class="top"><div class="logo"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v6"/></svg></div>
+<h1>منصة أستاذ حسين ماجد</h1><p>اختر نوع الدخول</p></div>
+<div class="body"><div class="list">
+<button class="role" data-go="teacher"><span class="ico" style="background:var(--c1)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></span><span><span class="t">المدرس</span><span class="s">البريد وكلمة السر</span></span><span class="arr">‹</span></button>
+<button class="role" data-go="student"><span class="ico" style="background:var(--c2)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></span><span><span class="t">الطالب</span><span class="s">الاسم الثلاثي والمعرف والصف</span></span><span class="arr">‹</span></button>
+<button class="role" data-go="parent"><span class="ico" style="background:var(--c3)"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><circle cx="17" cy="10" r="2.5"/><path d="M2.5 20c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5M15 15c3 0 6 1.3 6 4.5"/></svg></span><span><span class="t">ولي الأمر</span><span class="s">متابعة حساب الابن</span></span><span class="arr">‹</span></button>
+</div></div></section>
+<section id="teacher" hidden style="flex-direction:column;flex:1">
+<div class="top small"><button class="back" data-go="home" aria-label="رجوع"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6" transform="scale(-1 1) translate(-24 0)"/></svg></button><h1>دخول المدرس</h1><p>أدخل بيانات حسابك</p></div>
+<form class="body" id="f-teacher" autocomplete="off"><div class="card">
+<div class="group"><label for="t-email">البريد الإلكتروني</label><input type="email" id="t-email" dir=ltr placeholder="name@example.com" required></div>
+<div class="group"><label for="t-pass">كلمة السر</label><div class="pw"><input id="t-pass" type="password" dir="ltr" placeholder="••••••" required><button type="button" data-eye="t-pass">إظهار</button></div></div>
+<div class="msg err" id="t-err" hidden></div></div><button class="btn" type="submit">تسجيل الدخول</button></form>
+</section>
+<section id="student" hidden style="flex-direction:column;flex:1">
+<div class="top small"><button class="back" data-go="home" aria-label="رجوع"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6" transform="scale(-1 1) translate(-24 0)"/></svg></button><h1>دخول الطالب</h1><p>تحقق من حسابك ثم ادخل</p></div>
+<form class="body" id="f-student" autocomplete="off"><div class="card">
+<div class="group"><label for="s-name">اسم الطالب الثلاثي</label><input id="s-name" placeholder="علي حسين محمد" required></div>
+<div class="group"><label for="s-id">المعرف</label><input inputmode="numeric" id="s-id" dir=ltr placeholder="1001" required></div>
+<div class="group"><label for="s-grade">الصف</label><select id="s-grade" required><option value="">اختر الصف</option><option>الأول متوسط</option><option>الثاني متوسط</option><option>الثالث متوسط</option></select></div>
+<div class="msg" id="s-msg" hidden></div></div>
+<button class="btn" type="submit" id="s-btn">تحقق</button>
+<div class="demo">تجريبي: <b>علي حسين محمد</b> · <b>1001</b> · <b>الأول متوسط</b></div></form>
+</section>
+<section id="parent" hidden style="flex-direction:column;flex:1">
+<div class="top small"><button class="back" data-go="home" aria-label="رجوع"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6" transform="scale(-1 1) translate(-24 0)"/></svg></button><h1>دخول ولي الأمر</h1><p>بياناتك وبيانات ابنك</p></div>
+<form class="body" id="f-parent" autocomplete="off"><div class="card">
+<div class="group"><label for="p-name">اسم ولي الأمر الثلاثي</label><input id="p-name" placeholder="حسين محمد كاظم" required></div>
+<div class="group"><label for="p-child">اسم الابن الثلاثي</label><input id="p-child" placeholder="علي حسين محمد" required></div>
+<div class="group"><label for="p-id">معرف الابن</label><input inputmode="numeric" id="p-id" dir=ltr placeholder="1001" required></div>
+<div class="group"><label for="p-grade">الصف</label><select id="p-grade" required><option value="">اختر الصف</option><option>الأول متوسط</option><option>الثاني متوسط</option><option>الثالث متوسط</option></select></div>
+<div class="group"><label for="p-pass">كلمة السر</label><div class="pw"><input id="p-pass" type="password" dir="ltr" placeholder="••••••" required><button type="button" data-eye="p-pass">إظهار</button></div></div>
+<div class="msg err" id="p-err" hidden></div></div>
+<button class="btn" type="submit">تحقق ودخول</button>
+<div class="demo">تجريبي: الابن <b>علي حسين محمد</b> · <b>1001</b> · <b>الأول متوسط</b></div></form>
+</section>
+<section id="done" hidden style="flex-direction:column;flex:1"><div class="top small"><h1>منصة أستاذ حسين ماجد</h1><p id="done-sub"></p></div>
+<div class="body"><div class="welcome"><div class="okc"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><h2 id="done-title"></h2><p id="done-text"></p></div>
+<button class="btn" data-go="home">تسجيل الخروج</button></div></section>
 </div>
 
 <script>
