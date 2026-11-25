@@ -10,14 +10,20 @@ const fmt = t => { t = Math.max(0, t); const m = Math.floor(t / 60), s = t - m *
 const h = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
 
 const LANES = [
-  { id: 't',  label: 'نص / ملصق', accept: ['text', 'sticker'] },
-  { id: 'v2', label: 'طبقة 2',    accept: ['video', 'image', 'text', 'sticker'] },
-  { id: 'v1', label: 'الرئيسي',   accept: ['video', 'image'] },
-  { id: 'a1', label: 'صوت 1',     accept: ['audio'] },
-  { id: 'a2', label: 'صوت 2',     accept: ['audio'] },
+  { id: 't',  label: 'نص',       accept: ['text'] },
+  { id: 's',  label: 'ملصقات',   accept: ['sticker'] },
+  { id: 'v3', label: 'طبقة 3',   accept: ['video', 'image', 'text', 'sticker'] },
+  { id: 'v2', label: 'طبقة 2',   accept: ['video', 'image', 'text', 'sticker'] },
+  { id: 'v1', label: 'الرئيسي',  accept: ['video', 'image'] },
+  { id: 'a1', label: 'صوت 1',    accept: ['audio'] },
+  { id: 'a2', label: 'صوت 2',    accept: ['audio'] },
+  { id: 'a3', label: 'صوت 3',    accept: ['audio'] },
 ];
-const LANE_H = 44;
-const RANK = { v1: 0, v2: 1, t: 2 };
+const LANE_H = 38;
+const RANK = { v1: 0, v2: 1, v3: 2, s: 3, t: 4 };
+const LS = {}; // حالة المسارات: lock / hide / mute
+const selSet = new Set();
+const KFP = ['x', 'y', 'scale', 'rot', 'opacity'];
 
 /* ---------------- الحالة ---------------- */
 const S = { id: uid(), name: 'مشروع جديد', ratio: [16, 9], clips: [], media: {} };
@@ -42,6 +48,9 @@ function toast(msg, ms = 2200) { const t = $('#toast'); t.textContent = msg; t.h
 const total = () => S.clips.reduce((m, c) => Math.max(m, c.start + c.dur), 0);
 const byId = id => S.clips.find(c => c.id === id);
 const selClip = () => byId(sel);
+const setSel = id => { sel = id; selSet.clear(); if (id) selSet.add(id); };
+const selClips = () => { const a = S.clips.filter(c => selSet.has(c.id)); return a.length ? a : (selClip() ? [selClip()] : []); };
+const locked = c => !!(LS[c.lane] && LS[c.lane].lock);
 const get = (o, k) => k.split('.').reduce((a, b) => a[b], o);
 const set = (o, k, v) => { const p = k.split('.'); const l = p.pop(); p.reduce((a, b) => a[b], o)[l] = v; };
 
@@ -50,7 +59,8 @@ function newClip(p) {
     id: uid(), type: 'video', lane: 'v1', mediaId: null, start: 0, dur: 5, srcIn: 0, speed: 1,
     x: .5, y: .5, scale: 100, rot: 0, opacity: 100, flipH: false, flipV: false, blend: 'source-over',
     volume: 100, fadeIn: 0, fadeOut: 0, denoise: false, bass: 0, treble: 0, anim: 'none',
-    f: { b: 100, c: 100, s: 100, h: 0, sep: 0, g: 0, bl: 0, inv: 0, vig: 0 },
+    f: { b: 100, c: 100, s: 100, h: 0, sep: 0, g: 0, bl: 0, inv: 0, vig: 0, sharp: 0 },
+    kf: {}, crop: { l: 0, t: 0, r: 0, b: 0 }, trans: { type: 'none', dur: .6 }, curve: null, aiBg: false,
     chroma: { on: false, color: '#00ff00', tol: 40 },
     text: '', size: 64, color: '#ffffff', font: 'Cairo, Tahoma, sans-serif', bold: true, italic: false,
     strokeW: 0, strokeColor: '#000000', bgOn: false, bgColor: '#000000aa', shadow: true,
@@ -63,6 +73,7 @@ const cssFilter = c => {
   if (f.s !== 100) a.push(`saturate(${f.s}%)`); if (f.h) a.push(`hue-rotate(${f.h}deg)`);
   if (f.sep) a.push(`sepia(${f.sep}%)`); if (f.g) a.push(`grayscale(${f.g}%)`);
   if (f.bl) a.push(`blur(${f.bl}px)`); if (f.inv) a.push(`invert(${f.inv}%)`);
+  if (f.sharp) a.push(`url(#sh${f.sharp})`);
   return a.length ? a.join(' ') : 'none';
 };
 
@@ -70,11 +81,45 @@ const cssFilter = c => {
 const snap = () => JSON.stringify(S.clips);
 function pushUndo() { undoS.push(snap()); if (undoS.length > 100) undoS.shift(); redoS = []; lastU = performance.now(); dirty(); }
 function touch() { if (performance.now() - lastU > 800) pushUndo(); lastU = performance.now(); dirty(); }
-function restore(js) { S.clips = JSON.parse(js); if (!byId(sel)) sel = null; afterStruct(); }
+function restore(js) { S.clips = JSON.parse(js); if (!byId(sel)) setSel(null); afterStruct(); }
 function undo() { if (!undoS.length) return; redoS.push(snap()); restore(undoS.pop()); }
 function redo() { if (!redoS.length) return; undoS.push(snap()); restore(redoS.pop()); }
 function afterStruct() { pruneEls(); renderTimeline(); renderProps(); sync(time, false); render(); dirty(); }
 function pruneEls() { const ids = new Set(S.clips.map(c => c.id)); for (const [k, e] of els) if (!ids.has(k)) { try { e.pause && e.pause(); } catch (_) {} els.delete(k); } }
+
+/* ---------------- إطارات مفتاحية / منحنى السرعة / نوافذ الظهور ---------------- */
+function val(c, k, p) {
+  const a = c.kf && c.kf[k]; if (!a || !a.length) return c[k];
+  if (p <= a[0].t) return a[0].v;
+  for (let i = 1; i < a.length; i++) if (p <= a[i].t) { const u = (p - a[i - 1].t) / (a[i].t - a[i - 1].t || 1), e = u * u * (3 - 2 * u); return a[i - 1].v + (a[i].v - a[i - 1].v) * e; }
+  return a[a.length - 1].v;
+}
+function setProp(c, k, v, p) {
+  const a = c.kf && c.kf[k];
+  if (a && a.length) { const t = +clamp(p, 0, c.dur).toFixed(2), f = a.find(q => Math.abs(q.t - t) < .04); if (f) f.v = v; else { a.push({ t, v }); a.sort((x, y) => x.t - y.t); } }
+  else c[k] = v;
+}
+const curveMemo = {};
+function curveW(cv_, x) { const n = cv_.length - 1, p = clamp(x, 0, 1) * n, i = Math.min(n - 1, Math.floor(p)), f = p - i; return cv_[i] + (cv_[i + 1] - cv_[i]) * f; }
+function curveTab(cv_) {
+  const key = cv_.join(','); if (curveMemo[key]) return curveMemo[key];
+  const N = 400, cum = new Float32Array(N + 1); for (let i = 1; i <= N; i++) cum[i] = cum[i - 1] + curveW(cv_, (i - .5) / N) / N;
+  return curveMemo[key] = { cum, mean: cum[N] };
+}
+function srcTime(c, p) {
+  if (!c.curve) return c.srcIn + p * c.speed;
+  const t = curveTab(c.curve), u = clamp(p / c.dur, 0, 1) * 400, i = Math.min(399, Math.floor(u));
+  return c.srcIn + c.speed * c.dur * (t.cum[i] + (t.cum[i + 1] - t.cum[i]) * (u - i)) / t.mean;
+}
+function instRate(c, p) { if (!c.curve) return c.speed; return c.speed * curveW(c.curve, p / c.dur) / curveTab(c.curve).mean; }
+function tail(c) {
+  let tl = 0; const end = c.start + c.dur;
+  for (const n of S.clips) if (n !== c && n.lane === c.lane && n.trans && n.trans.type !== 'none' && Math.abs(n.start - end) < .03) tl = Math.max(tl, n.trans.dur);
+  if (tl && (c.type === 'video' || c.type === 'audio')) { const m = S.media[c.mediaId]; if (!m || m.duration - (c.srcIn + c.dur * c.speed) < tl * c.speed) tl = 0; }
+  return tl;
+}
+const inWin = (c, t) => t >= c.start && t < c.start + c.dur + tail(c);
+const laneOff = c => !!(LS[c.lane] && LS[c.lane].hide);
 
 /* ---------------- الصوت (WebAudio) ---------------- */
 let AC = null, dest = null, monitor = null;
@@ -112,10 +157,10 @@ function sync(t, play) {
   for (const c of S.clips) {
     if (c.type !== 'video' && c.type !== 'audio') continue;
     const e = getEl(c); if (!e) continue;
-    const act = t >= c.start && t < c.start + c.dur;
+    const act = inWin(c, t);
     if (!act) { if (!e.paused) e.pause(); continue; }
-    const p = t - c.start, target = c.srcIn + p * c.speed;
-    e.playbackRate = clamp(c.speed, .0625, 16);
+    const p = t - c.start, target = srcTime(c, p);
+    e.playbackRate = clamp(instRate(c, p), .0625, 16);
     if (play) {
       if (e.paused) { e.currentTime = target; e.play().catch(() => {}); }
       else if (Math.abs(e.currentTime - target) > .35) e.currentTime = target;
@@ -126,6 +171,7 @@ function sync(t, play) {
     if (e._n) {
       let a = c.volume / 100; if (c.fadeIn > 0 && p < c.fadeIn) a *= p / c.fadeIn;
       const r = c.dur - p; if (c.fadeOut > 0 && r < c.fadeOut) a *= r / c.fadeOut;
+      if (LS[c.lane] && (LS[c.lane].hide || LS[c.lane].mute)) a = 0;
       const n = e._n; n.gn.gain.value = Math.max(0, a);
       n.hp.frequency.value = c.denoise ? 120 : 10; n.lp.frequency.value = c.denoise ? 9000 : 22000;
       n.ls.gain.value = c.bass; n.hs.gain.value = c.treble;
@@ -162,21 +208,26 @@ function render() {
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.filter = 'none';
   g.fillStyle = '#000'; g.fillRect(0, 0, W, H);
   bounds = {};
-  const act = S.clips.filter(c => c.type !== 'audio' && time >= c.start && time < c.start + c.dur)
+  const act = S.clips.filter(c => c.type !== 'audio' && !laneOff(c) && inWin(c, time))
     .sort((a, b) => (RANK[a.lane] - RANK[b.lane]) || (a.start - b.start));
   for (const c of act) drawClip(c);
   if (sel && !exporting && bounds[sel]) {
     const b = bounds[sel]; g.save(); g.translate(b.cx, b.cy); g.rotate(b.rot * Math.PI / 180);
     g.strokeStyle = '#2ee6d0'; g.lineWidth = 2; g.strokeRect(-b.w * b.sc / 2, -b.h * b.sc / 2, b.w * b.sc, b.h * b.sc); g.restore();
   }
-  updateTC();
+  if (window.detBoxes && performance.now() < window.detBoxes.until) {
+    g.save(); g.lineWidth = 3; g.strokeStyle = '#ffd23f'; g.fillStyle = '#ffd23f'; g.font = `bold ${Math.round(H / 36)}px sans-serif`;
+    for (const b of window.detBoxes.items) { g.strokeRect(b.x, b.y, b.w, b.h); g.fillText(b.label, b.x + 4, Math.max(g.measureText('M').width * 1.6, b.y - 6)); }
+    g.restore();
+  }
+  refreshKf(); updateTC();
 }
 function drawClip(c) {
   const W = cv.width, H = cv.height, p = time - c.start, d = c.dur, k = Math.min(W, H) / 720;
-  let a = c.opacity / 100;
+  let a = val(c, 'opacity', p) / 100;
   if (c.fadeIn > 0 && p < c.fadeIn) a *= p / c.fadeIn;
   if (c.fadeOut > 0 && d - p < c.fadeOut) a *= (d - p) / c.fadeOut;
-  let x = c.x, y = c.y, sc = c.scale / 100, rot = c.rot;
+  let x = val(c, 'x', p), y = val(c, 'y', p), sc = val(c, 'scale', p) / 100, rot = val(c, 'rot', p);
   const ease = v => 1 - Math.pow(1 - clamp(v, 0, 1), 3), e6 = ease(p / .6);
   switch (c.anim) {
     case 'zoomin': sc *= 1 + .25 * p / d; break;
@@ -187,7 +238,17 @@ function drawClip(c) {
     case 'pop': sc *= ease(p / .4) * (1 + .1 * Math.sin(Math.min(p / .4, 1) * Math.PI)); break;
     case 'pulse': sc *= 1 + .06 * Math.sin(p * 6); break;
   }
+  let blurT = 0, wipe = 1; const tr = c.trans;
+  if (tr && tr.type !== 'none' && p >= 0 && p < tr.dur) {
+    const e = ease(p / tr.dur);
+    switch (tr.type) {
+      case 'fade': a *= e; break; case 'slideL': x -= 1 - e; break; case 'slideR': x += 1 - e; break; case 'slideUp': y += 1 - e; break;
+      case 'zoom': sc *= .4 + .6 * e; a *= e; break; case 'spin': rot += (1 - e) * 120; sc *= .3 + .7 * e; a *= e; break;
+      case 'wipe': wipe = e; break; case 'blur': blurT = (1 - e) * 24; a *= .4 + .6 * e; break;
+    }
+  }
   g.save(); g.globalAlpha = clamp(a, 0, 1); g.globalCompositeOperation = c.blend;
+  if (wipe < 1) { g.beginPath(); g.rect(0, 0, W * wipe, H); g.clip(); }
   g.translate(x * W, y * H); g.rotate(rot * Math.PI / 180);
   let w = 0, hh = 0;
   if (c.type === 'video' || c.type === 'image') {
@@ -195,15 +256,18 @@ function drawClip(c) {
     if (iw && ih && (c.type === 'image' || e.readyState >= 2)) {
       const fit = Math.min(W / iw, H / ih); w = iw * fit; hh = ih * fit;
       g.scale(sc * (c.flipH ? -1 : 1), sc * (c.flipV ? -1 : 1));
-      g.filter = cssFilter(c);
-      if (c.chroma.on) {
-        const mw = Math.min(960, iw), mh = Math.round(mw * ih / iw);
+      const fl = cssFilter(c); g.filter = blurT ? (fl === 'none' ? '' : fl + ' ') + `blur(${blurT}px)` : fl;
+      const cr = c.crop || { l: 0, t: 0, r: 0, b: 0 }, fw = 1 - (cr.l + cr.r) / 100, fh = 1 - (cr.t + cr.b) / 100;
+      const sx = iw * cr.l / 100, sy = ih * cr.t / 100, sw = iw * fw, sh = ih * fh, dx = -w / 2 + w * cr.l / 100, dy = -hh / 2 + hh * cr.t / 100, dw = w * fw, dh = hh * fh;
+      if (c.chroma.on || (c.aiBg && window.aiMask)) {
+        const mw = Math.max(2, Math.min(960, Math.round(sw))), mh = Math.max(2, Math.round(mw * sh / sw));
         if (off.width !== mw || off.height !== mh) { off.width = mw; off.height = mh; }
-        og.clearRect(0, 0, mw, mh); og.drawImage(e, 0, 0, mw, mh);
-        chromaKey(og.getImageData(0, 0, mw, mh), c.chroma);
-        g.drawImage(off, -w / 2, -hh / 2, w, hh);
-      } else g.drawImage(e, -w / 2, -hh / 2, w, hh);
-      g.filter = 'none';
+        og.globalCompositeOperation = 'source-over'; og.clearRect(0, 0, mw, mh); og.drawImage(e, sx, sy, sw, sh, 0, 0, mw, mh);
+        if (c.chroma.on) chromaKey(og.getImageData(0, 0, mw, mh), c.chroma);
+        if (c.aiBg && window.aiMask) window.aiMask(off, og, c);
+        g.drawImage(off, dx, dy, dw, dh);
+      } else g.drawImage(e, sx, sy, sw, sh, dx, dy, dw, dh);
+      g.filter = 'none'; w = dw; hh = dh;
       if (c.f.vig > 0) {
         const gr = g.createRadialGradient(0, 0, Math.min(w, hh) * .25, 0, 0, Math.max(w, hh) * .7);
         gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, `rgba(0,0,0,${c.f.vig / 100})`);
@@ -254,12 +318,12 @@ cv.addEventListener('pointerdown', e => {
     const lx = (dx * Math.cos(r) - dy * Math.sin(r)) / b.sc, ly = (dx * Math.sin(r) + dy * Math.cos(r)) / b.sc;
     if (Math.abs(lx) <= b.w / 2 && Math.abs(ly) <= b.h / 2) { hit = c; break; }
   }
-  if (hit) { selectClip(hit.id); pushUndo(); drag = { id: hit.id, px, py, x: hit.x, y: hit.y }; cv.setPointerCapture(e.pointerId); }
+  if (hit) { selectClip(hit.id); pushUndo(); drag = { id: hit.id, px, py, x: val(hit, 'x', time - hit.start), y: val(hit, 'y', time - hit.start) }; cv.setPointerCapture(e.pointerId); }
   else selectClip(null);
 });
 cv.addEventListener('pointermove', e => {
   if (!drag) return; const [px, py] = cvPoint(e), c = byId(drag.id); if (!c) return;
-  c.x = drag.x + (px - drag.px) / cv.width; c.y = drag.y + (py - drag.py) / cv.height; render(); dirty();
+  const lp = time - c.start; setProp(c, 'x', drag.x + (px - drag.px) / cv.width, lp); setProp(c, 'y', drag.y + (py - drag.py) / cv.height, lp); render(); dirty();
 });
 cv.addEventListener('pointerup', () => { if (drag) { drag = null; renderProps(); } });
 
@@ -300,6 +364,7 @@ function renderLib() {
     else if (m.type === 'video') it.innerHTML = `<video src="${m.url}#t=0.1" preload="metadata" muted></video>`;
     else it.innerHTML = '🎵';
     it.append(h('b', '', m.name));
+    const ac = h('div', 'acts'), b2 = h('span', '', '⧉ طبقة إضافية'); b2.onclick = ev => { ev.stopPropagation(); addMediaClip(m.id, { lane: m.type === 'audio' ? 'a2' : 'v2' }); }; ac.append(b2); it.append(ac);
     it.onclick = () => addMediaClip(m.id);
     lib.append(it);
   }
@@ -310,12 +375,12 @@ function addMediaClip(mid, opts = {}) {
   const lane = m.type === 'audio' ? (opts.lane || 'a1') : (opts.lane || 'v1');
   const end = S.clips.filter(c => c.lane === lane).reduce((a, c) => Math.max(a, c.start + c.dur), 0);
   const c = newClip({ type: m.type, lane, mediaId: mid, start: opts.start != null ? opts.start : (lane === 'v1' || lane === 'a1' ? end : time), dur: m.type === 'image' ? 5 : m.duration, name: m.name });
-  S.clips.push(c); sel = c.id; afterStruct(); toast('تمت الإضافة إلى الخط الزمني');
+  S.clips.push(c); setSel(c.id); afterStruct(); toast('تمت الإضافة إلى الخط الزمني');
 }
 function addOverlay(type, props) {
   pushUndo();
-  const c = newClip({ type, lane: 't', start: time, dur: 4, ...props });
-  S.clips.push(c); sel = c.id; afterStruct();
+  const c = newClip({ type, lane: type === 'sticker' ? 's' : 't', start: time, dur: 4, ...props });
+  S.clips.push(c); setSel(c.id); afterStruct();
 }
 
 /* ---------------- الخط الزمني ---------------- */
@@ -328,7 +393,14 @@ function renderTimeline() {
   for (let t = 0; t < tot; t += step) { const k = h('div', 'tick', fmt(t).slice(0, step < 1 ? 5 : 5)); k.style.left = (64 + t * pps) + 'px'; ruler.append(k); }
   lanesEl.innerHTML = '';
   for (const L of LANES) {
-    const lane = h('div', 'lane'); lane.dataset.lane = L.id; lane.append(h('div', 'lbl', L.label));
+    const lane = h('div', 'lane'); lane.dataset.lane = L.id;
+    const st = LS[L.id] || (LS[L.id] = {}), lb = h('div', 'lbl'), ic = h('div', 'ic'); lb.append(h('span', '', L.label));
+    [['lock', '🔒', 'قفل المسار'], ['hide', '👁', 'إخفاء المسار'], ['mute', '🔇', 'كتم المسار']].forEach(([k, em, tt]) => {
+      if (k === 'mute' && L.id[0] !== 'a' && L.id[0] !== 'v') return;
+      const i = h('i', '', em); i.title = tt; i.classList.toggle('on', !!st[k]);
+      i.onclick = ev => { ev.stopPropagation(); st[k] = !st[k]; renderTimeline(); sync(time, false); render(); dirty(); }; ic.append(i);
+    });
+    lb.append(ic); lane.append(lb); lane.classList.toggle('hidden', !!st.hide); lane.classList.toggle('locked', !!st.lock);
     const tr = h('div', 'track'); lane.append(tr);
     for (const c of S.clips.filter(c => c.lane === L.id)) tr.append(clipEl(c));
     lanesEl.append(lane);
@@ -337,7 +409,7 @@ function renderTimeline() {
 }
 function clipLabel(c) { return c.type === 'text' ? '✎ ' + (c.text || '').split('\n')[0] : c.type === 'sticker' ? c.text : ({ video: '🎞 ', image: '🖼 ', audio: '🎵 ' }[c.type]) + (c.name || ''); }
 function clipEl(c) {
-  const d = h('div', 'clip ' + c.type + (c.id === sel ? ' sel' : ''));
+  const d = h('div', 'clip ' + c.type + (c.id === sel ? ' sel' : selSet.has(c.id) ? ' multi' : ''));
   d.dataset.id = c.id; d.style.left = c.start * pps + 'px'; d.style.width = Math.max(6, c.dur * pps) + 'px';
   const m = S.media[c.mediaId];
   if (cfg.wave && m && m.peaks && (c.type === 'audio' || c.type === 'video')) {
@@ -350,6 +422,9 @@ function clipEl(c) {
     d.append(cn);
   }
   const lb = h('span'); lb.textContent = clipLabel(c); lb.style.position = 'relative'; d.append(lb);
+  if (c.trans && c.trans.type !== 'none') { const t = h('div', 'tr'); t.style.width = c.trans.dur * pps + 'px'; d.append(t); }
+  const kt = new Set(); Object.values(c.kf || {}).forEach(a => a.forEach(q => kt.add(q.t)));
+  kt.forEach(t => { const k = h('div', 'kf'); k.style.left = t * pps + 'px'; d.append(k); });
   d.append(h('div', 'h l'), h('div', 'h r'));
   d.addEventListener('pointerdown', e => clipDown(e, c, d));
   return d;
@@ -368,16 +443,20 @@ function snapT(t, c, edgeW = 0) {
 function laneAt(y) { const r = lanesEl.getBoundingClientRect(); const i = Math.floor((y - r.top) / LANE_H); return LANES[clamp(i, 0, LANES.length - 1)]; }
 function clipDown(e, c, d) {
   e.stopPropagation(); e.preventDefault();
-  selectClip(c.id, true);
+  const add = e.shiftKey || e.ctrlKey || e.metaKey;
+  if (add || !selSet.has(c.id)) selectClip(c.id, true, add); else { sel = c.id; $$('.clip', lanesEl).forEach(x => x.classList.toggle('sel', x.dataset.id === sel)); renderProps(); render(); }
+  if (add || locked(c)) { if (locked(c)) toast('المسار مقفل'); return; }
   const r = d.getBoundingClientRect(), ox = e.clientX - r.left;
   const mode = ox < 9 ? 'l' : ox > r.width - 9 ? 'r' : 'm';
   const o = { start: c.start, dur: c.dur, srcIn: c.srcIn, x: e.clientX }; const m = S.media[c.mediaId];
-  pushUndo(); d.setPointerCapture(e.pointerId);
+  const grp = (mode === 'm' && selSet.size > 1) ? S.clips.filter(q => selSet.has(q.id) && !locked(q)).map(q => [q, q.start]) : null;
+  pushUndo();
   const mv = ev => {
     const dt = (ev.clientX - o.x) / pps;
     if (mode === 'm') {
-      c.start = Math.max(0, snapT(o.start + dt, c, c.dur));
-      const L = laneAt(ev.clientY); if (L.accept.includes(c.type)) c.lane = L.id;
+      let ns = Math.max(0, snapT(o.start + dt, c, c.dur));
+      if (grp) { const sh = Math.max(ns - o.start, -Math.min(...grp.map(q => q[1]))); grp.forEach(([q, s0]) => q.start = s0 + sh); }
+      else { c.start = ns; const L = laneAt(ev.clientY); if (L.accept.includes(c.type)) c.lane = L.id; }
     } else if (mode === 'l') {
       let ns = snapT(o.start + dt, c), delta = ns - o.start;
       if (c.type === 'video' || c.type === 'audio') delta = Math.max(delta, -o.srcIn / c.speed);
@@ -390,10 +469,15 @@ function clipDown(e, c, d) {
     }
     renderTimeline(); sync(time, false); render();
   };
-  const up = () => { d.removeEventListener('pointermove', mv); d.removeEventListener('pointerup', up); renderProps(); };
-  d.addEventListener('pointermove', mv); d.addEventListener('pointerup', up);
+  const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); removeEventListener('pointercancel', up); renderProps(); };
+  addEventListener('pointermove', mv); addEventListener('pointerup', up); addEventListener('pointercancel', up);
 }
-function selectClip(id, keepTl) { sel = id; if (!keepTl) renderTimeline(); else $$('.clip', lanesEl).forEach(x => x.classList.toggle('sel', x.dataset.id === id)); renderProps(); render(); }
+function selectClip(id, keepTl, add) {
+  if (add && id) { if (selSet.has(id)) { selSet.delete(id); if (sel === id) sel = [...selSet][0] || null; } else { selSet.add(id); sel = id; } }
+  else setSel(id);
+  if (!keepTl) renderTimeline(); else $$('.clip', lanesEl).forEach(x => { x.classList.toggle('sel', x.dataset.id === sel); x.classList.toggle('multi', selSet.has(x.dataset.id) && x.dataset.id !== sel); });
+  renderProps(); render();
+}
 lanesEl.addEventListener('pointerdown', e => { if (e.target.closest('.clip') || e.target.closest('.lbl')) return; selectClip(null); const r = ruler.getBoundingClientRect(); seek((e.clientX - r.left - 64) / pps); });
 function rulerSeek(e) { const r = ruler.getBoundingClientRect(); pause(); seek((e.clientX - r.left - 64) / pps); }
 ruler.addEventListener('pointerdown', e => { ruler.setPointerCapture(e.pointerId); rulerSeek(e); ruler.onpointermove = rulerSeek; });
@@ -404,20 +488,46 @@ addEventListener('resize', renderTimeline);
 
 /* ---------------- أدوات التحرير ---------------- */
 function splitClip() {
-  const c = selClip() || S.clips.filter(c => time > c.start + .05 && time < c.start + c.dur - .05).sort((a, b) => RANK[a.lane] - RANK[b.lane])[0];
-  if (!c) return toast('حدّد مقطعاً أو ضع المؤشر داخل مقطع');
-  const p = time - c.start; if (p < .05 || p > c.dur - .05) return toast('ضع المؤشر داخل المقطع لتقسيمه');
-  pushUndo();
-  const n = JSON.parse(JSON.stringify(c)); n.id = uid(); n.start = time; n.dur = c.dur - p; n.fadeIn = 0;
-  if (c.type === 'video' || c.type === 'audio') n.srcIn = c.srcIn + p * c.speed;
-  c.dur = p; c.fadeOut = 0; S.clips.push(n); sel = n.id; afterStruct();
+  let targets = selClips().filter(c => time > c.start + .05 && time < c.start + c.dur - .05);
+  if (!targets.length && !selClips().length) { const c = S.clips.filter(c => time > c.start + .05 && time < c.start + c.dur - .05 && !laneOff(c)).sort((a, b) => RANK[a.lane] - RANK[b.lane])[0]; if (c) targets = [c]; }
+  targets = targets.filter(c => !locked(c));
+  if (!targets.length) return toast('ضع المؤشر داخل مقطع غير مقفل لتقسيمه');
+  pushUndo(); let last = null;
+  for (const c of targets) {
+    const p = time - c.start, n = JSON.parse(JSON.stringify(c)); n.id = uid(); n.start = time; n.dur = c.dur - p; n.fadeIn = 0; n.trans = { type: 'none', dur: .6 };
+    if (c.type === 'video' || c.type === 'audio') n.srcIn = srcTime(c, p);
+    for (const k of Object.keys(c.kf || {})) { // توزيع الإطارات المفتاحية على الجزأين
+      const a = c.kf[k], v = val(c, k, p);
+      n.kf[k] = [{ t: 0, v }, ...a.filter(q => q.t > p).map(q => ({ t: +(q.t - p).toFixed(2), v: q.v }))];
+      c.kf[k] = [...a.filter(q => q.t < p), { t: +p.toFixed(2), v }];
+    }
+    c.curve = null; n.curve = null; c.dur = p; c.fadeOut = 0; S.clips.push(n); last = n;
+  }
+  setSel(last.id); afterStruct();
 }
-function delClip() { if (!sel) return toast('لا يوجد مقطع محدد'); pushUndo(); S.clips = S.clips.filter(c => c.id !== sel); sel = null; afterStruct(); }
-function dupClip() { const c = selClip(); if (!c) return toast('حدّد مقطعاً'); pushUndo(); const n = JSON.parse(JSON.stringify(c)); n.id = uid(); n.start = c.start + c.dur; S.clips.push(n); sel = n.id; afterStruct(); }
+function delClip() { const t = selClips().filter(c => !locked(c)); if (!t.length) return toast('لا يوجد مقطع محدد قابل للحذف'); pushUndo(); const ids = new Set(t.map(c => c.id)); S.clips = S.clips.filter(c => !ids.has(c.id)); setSel(null); afterStruct(); }
+function dupClip() { const t = selClips().filter(c => !locked(c)); if (!t.length) return toast('حدّد مقطعاً'); pushUndo(); let last; for (const c of t) { const n = JSON.parse(JSON.stringify(c)); n.id = uid(); n.start = c.start + c.dur; n.trans = { type: 'none', dur: .6 }; S.clips.push(n); last = n; } setSel(last.id); afterStruct(); }
+function mergeClips() {
+  const t = selClips().sort((a, b) => a.start - b.start); if (t.length < 2) return toast('حدّد مقطعين متجاورين أو أكثر (Shift + نقر)');
+  pushUndo(); let merged = 0, base = t[0];
+  for (const n of t.slice(1)) {
+    const end = base.start + base.dur, av = base.type === 'video' || base.type === 'audio';
+    const ok = n.lane === base.lane && n.type === base.type && n.mediaId === base.mediaId && Math.abs(n.start - end) < .06 && n.speed === base.speed && !base.curve && !n.curve &&
+      (!av || Math.abs(n.srcIn - (base.srcIn + base.dur * base.speed)) < .08 * base.speed);
+    if (!ok) { base = n; continue; }
+    base.dur = n.start + n.dur - base.start; S.clips = S.clips.filter(c => c !== n); merged++;
+  }
+  if (!merged) { undoS.pop(); return toast('لا يمكن الدمج: يجب أن يكون المقطعان متصلين ومن المصدر نفسه'); }
+  setSel(base.id); afterStruct(); toast('تم دمج ' + merged + ' مقطع');
+}
+function closeGaps() {
+  const lane = (selClip() && selClip().lane) || 'v1', L = S.clips.filter(c => c.lane === lane).sort((a, b) => a.start - b.start); if (!L.length || locked(L[0])) return toast('لا شيء لإغلاقه');
+  pushUndo(); let t = 0; for (const c of L) { c.start = t; t += c.dur; } afterStruct(); toast('تم إغلاق الفراغات في المسار');
+}
 function extractAudio() {
   const c = selClip(); if (!c || c.type !== 'video') return toast('حدّد مقطع فيديو أولاً');
   const m = S.media[c.mediaId]; if (m.hasAudio === false) return toast('هذا الفيديو لا يحتوي على صوت');
-  pushUndo(); const n = JSON.parse(JSON.stringify(c)); n.id = uid(); n.type = 'audio'; n.lane = 'a1'; c.volume = 0; S.clips.push(n); sel = n.id; afterStruct(); toast('تم استخراج الصوت إلى مسار مستقل وكتم الفيديو الأصلي');
+  pushUndo(); const n = JSON.parse(JSON.stringify(c)); n.id = uid(); n.type = 'audio'; n.lane = 'a1'; c.volume = 0; S.clips.push(n); setSel(n.id); afterStruct(); toast('تم استخراج الصوت إلى مسار مستقل وكتم الفيديو الأصلي');
 }
 function autoEnhance() {
   const c = selClip(); if (!c || (c.type !== 'video' && c.type !== 'image')) return toast('حدّد مقطع فيديو أو صورة');
@@ -431,11 +541,23 @@ function autoEnhance() {
 }
 
 /* ---------------- لوحة الخصائص ---------------- */
-const FONTS = ['Cairo, Tahoma, sans-serif', 'Tahoma, sans-serif', 'Arial, sans-serif', 'Georgia, serif', '"Times New Roman", serif', '"Courier New", monospace', 'Impact, sans-serif', '"Comic Sans MS", cursive'];
-const FONT_N = ['Cairo', 'Tahoma', 'Arial', 'Georgia', 'Times', 'Courier', 'Impact', 'Comic'];
+const FONT_N = ['Cairo', 'Tajawal', 'Amiri (نسخ)', 'Reem Kufi (كوفي)', 'Lalezar (عريض)', 'Almarai', 'El Messiri', 'Changa', 'Tahoma', 'Arial', 'Georgia', 'Impact'];
+const FONTS = ['Cairo', 'Tajawal', 'Amiri', '"Reem Kufi"', 'Lalezar', 'Almarai', '"El Messiri"', 'Changa', 'Tahoma', 'Arial', 'Georgia', 'Impact'].map(f => f + ', Tahoma, sans-serif');
+FONTS.forEach(f => { try { document.fonts.load('bold 24px ' + f); document.fonts.load('24px ' + f); } catch (e) {} });
+if (document.fonts) document.fonts.addEventListener('loadingdone', () => render());
+const kfUI = [];
+function refreshKf() {
+  const c = selClip(); if (!c) return; const p = time - c.start;
+  for (const u of kfUI) if (u.c === c) {
+    const v = val(c, u.key, p), a = c.kf[u.key];
+    if (document.activeElement !== u.i) u.i.value = v; u.o.textContent = (+v).toFixed(u.key === 'x' || u.key === 'y' ? 2 : 0) + u.unit;
+    u.kb.classList.toggle('on', !!(a && a.some(q => Math.abs(q.t - p) < .04)));
+  }
+}
+function renderTimelineKf() { renderTimeline(); }
 function afterEdit(tl) { sync(time, false); render(); if (tl) renderTimeline(); }
 function renderProps() {
-  const P = $('#props'); P.innerHTML = ''; const c = selClip();
+  const P = $('#props'); P.innerHTML = ''; kfUI.length = 0; const c = selClip();
   if (!c) {
     P.append(h('h4', '', 'المشروع'));
     const r = h('div', 'row'); r.append(h('label', '', 'الاسم')); const i = h('input'); i.type = 'text'; i.value = S.name; i.oninput = () => { S.name = i.value; dirty(); }; r.append(i); P.append(r);
@@ -444,9 +566,19 @@ function renderProps() {
   }
   const sec = t => P.append(h('h4', '', t));
   const rng = (label, key, min, max, step, unit = '', cb) => {
-    const r = h('div', 'row'), l = h('label', '', label), i = h('input'), o = h('output'); i.type = 'range'; i.min = min; i.max = max; i.step = step; i.value = get(c, key); o.textContent = i.value + unit;
-    i.oninput = () => { touch(); set(c, key, +i.value); o.textContent = i.value + unit; if (cb) cb(); afterEdit(key === 'fadeIn' || key === 'fadeOut'); };
-    r.append(l, i, o); P.append(r);
+    const r = h('div', 'row'), l = h('label', '', label), i = h('input'), o = h('output'), isK = KFP.includes(key); i.type = 'range'; i.min = min; i.max = max; i.step = step; i.value = isK ? val(c, key, time - c.start) : get(c, key); o.textContent = i.value + unit;
+    i.oninput = () => { touch(); if (isK) setProp(c, key, +i.value, time - c.start); else set(c, key, +i.value); o.textContent = i.value + unit; if (cb) cb(); afterEdit(key === 'fadeIn' || key === 'fadeOut'); if (isK) renderTimelineKf(); };
+    if (isK) {
+      const kb = h('button', 'kfb', '◆'); kb.title = 'إطار مفتاحي عند موضع المؤشر';
+      kb.onclick = () => {
+        pushUndo(); const p = +clamp(time - c.start, 0, c.dur).toFixed(2), a = c.kf[key];
+        if (!a || !a.length) c.kf[key] = [{ t: p, v: c[key] }];
+        else { const f = a.findIndex(q => Math.abs(q.t - p) < .04); if (f >= 0) { if (a.length === 1) c[key] = a[0].v; a.splice(f, 1); if (!a.length) delete c.kf[key]; } else { a.push({ t: p, v: val(c, key, p) }); a.sort((x, y) => x.t - y.t); } }
+        render(); renderTimeline();
+      };
+      r.append(l, kb, i, o); kfUI.push({ c, key, i, o, kb, unit });
+    } else r.append(l, i, o);
+    P.append(r);
   };
   const chk = (label, key, cb) => { const r = h('div', 'row'), l = h('label', '', label), i = h('input'); i.type = 'checkbox'; i.checked = get(c, key); i.onchange = () => { pushUndo(); set(c, key, i.checked); if (cb) cb(); afterEdit(); }; r.append(l, i); P.append(r); };
   const col = (label, key) => { const r = h('div', 'row'), l = h('label', '', label), i = h('input'); i.type = 'color'; i.value = get(c, key).slice(0, 7); i.oninput = () => { touch(); set(c, key, i.value); afterEdit(); }; r.append(l, i); P.append(r); };
@@ -467,12 +599,15 @@ function renderProps() {
   if (c.type !== 'audio') {
     sec('التحويل'); rng('الحجم %', 'scale', 5, 400, 1); rng('X', 'x', -.5, 1.5, .005); rng('Y', 'y', -.5, 1.5, .005); rng('التدوير °', 'rot', -180, 180, 1); rng('الشفافية', 'opacity', 0, 100, 1, '%');
     if (c.type === 'video' || c.type === 'image') { chk('قلب أفقي', 'flipH'); chk('قلب عمودي', 'flipV'); }
+    sel_('الانتقال (عند البداية)', 'trans.type', TRANS.map(t => [t[0], t[1]]), () => { if (c.trans.type !== 'none') toast('تم تطبيق الانتقال'); renderTimeline(); });
+    rng('مدة الانتقال', 'trans.dur', .2, 2, .1, 's', () => renderTimeline());
     sel_('الدمج', 'blend', [['source-over', 'عادي'], ['multiply', 'ضرب'], ['screen', 'شاشة'], ['overlay', 'تراكب'], ['lighten', 'تفتيح'], ['darken', 'تغميق'], ['difference', 'فرق']]);
     sel_('حركة الدخول', 'anim', ANIMS.map(a => [a[0], a[1]]));
     rng('ظهور تدريجي', 'fadeIn', 0, 3, .1, 's'); rng('اختفاء تدريجي', 'fadeOut', 0, 3, .1, 's');
   }
   if (c.type === 'video' || c.type === 'audio') {
     sec('السرعة');
+    const sg = h('div', 'seg'); SPEEDCURVES.forEach(([n, cv_]) => { const b = h('button', '', n); b.onclick = () => { pushUndo(); c.curve = cv_ ? cv_.slice() : null; afterEdit(); toast(cv_ ? 'تم تطبيق منحنى السرعة: ' + n : 'سرعة عادية'); }; sg.append(b); }); P.append(h('p', 'hint', 'منحنى السرعة (يعيد توزيع السرعة دون تغيير المدة الكلية):')); P.append(sg);
     const r = h('div', 'row'), l = h('label', '', 'السرعة'), i = h('input'), o = h('output'); i.type = 'range'; i.min = .25; i.max = 4; i.step = .05; i.value = c.speed; o.textContent = c.speed + 'x';
     i.oninput = () => { touch(); const span = c.dur * c.speed, m = S.media[c.mediaId]; c.speed = +i.value; c.dur = span / c.speed; o.textContent = c.speed + 'x'; afterEdit(true); };
     r.append(l, i, o); P.append(r);
@@ -483,7 +618,8 @@ function renderProps() {
   if (c.type === 'video' || c.type === 'image') {
     sec('الألوان والفلاتر');
     rng('السطوع', 'f.b', 20, 250, 1, '%'); rng('التباين', 'f.c', 20, 250, 1, '%'); rng('التشبع', 'f.s', 0, 300, 1, '%'); rng('تدرج اللون', 'f.h', -180, 180, 1, '°');
-    rng('سيبيا', 'f.sep', 0, 100, 1, '%'); rng('رمادي', 'f.g', 0, 100, 1, '%'); rng('ضبابية', 'f.bl', 0, 20, .5, 'px'); rng('عكس', 'f.inv', 0, 100, 1, '%'); rng('تعتيم الأطراف', 'f.vig', 0, 100, 1, '%');
+    rng('سيبيا', 'f.sep', 0, 100, 1, '%'); rng('رمادي', 'f.g', 0, 100, 1, '%'); rng('ضبابية', 'f.bl', 0, 20, .5, 'px'); rng('عكس', 'f.inv', 0, 100, 1, '%'); rng('تعتيم الأطراف', 'f.vig', 0, 100, 1, '%'); rng('الحدة (0-3)', 'f.sharp', 0, 3, 1);
+    sec('الاقتصاص'); rng('من اليسار', 'crop.l', 0, 45, 1, '%'); rng('من اليمين', 'crop.r', 0, 45, 1, '%'); rng('من الأعلى', 'crop.t', 0, 45, 1, '%'); rng('من الأسفل', 'crop.b', 0, 45, 1, '%');
     sec('إزالة الخلفية الخضراء (Chroma Key)'); chk('تفعيل', 'chroma.on'); col('اللون', 'chroma.color'); rng('التسامح', 'chroma.tol', 5, 90, 1);
     const b = h('button', 'btn', '✨ تحسين تلقائي للألوان'); b.onclick = autoEnhance; P.append(b);
     const rs = h('button', 'btn', 'إعادة ضبط الفلاتر'); rs.onclick = () => { pushUndo(); c.f = newClip({}).f; renderProps(); afterEdit(); }; P.append(rs);
@@ -491,12 +627,15 @@ function renderProps() {
 }
 
 /* ---------------- اللوحة اليسرى ---------------- */
+const TRANS = [['none', 'بدون'], ['fade', 'تلاشي'], ['slideL', 'انزلاق يسار'], ['slideR', 'انزلاق يمين'], ['slideUp', 'صعود'], ['zoom', 'تكبير'], ['spin', 'دوران'], ['wipe', 'مسح'], ['blur', 'ضبابية']];
+const SPEEDCURVES = [['عادي', null], ['مونتاج', [2, .4, 2, .4, 2]], ['بطل', [1, .25, .25, 1, 2]], ['رصاصة', [1, 1, .1, .1, 1, 1]], ['قفزة للداخل', [.3, .5, 1, 2, 3]], ['قفزة للخارج', [3, 2, 1, .5, .3]], ['وميض للداخل', [3, .5, .5, 1, 1]], ['وميض للخارج', [1, 1, .5, .5, 3]]];
 const ANIMS = [['none', 'بدون'], ['zoomin', 'تكبير تدريجي'], ['zoomout', 'تصغير تدريجي'], ['inleft', 'انزلاق من اليسار'], ['inright', 'انزلاق من اليمين'], ['inup', 'صعود'], ['pop', 'ظهور منبثق'], ['pulse', 'نبض']];
 const FILTERS = [
   ['أصلي', {}], ['حيوي', { b: 105, c: 115, s: 150 }], ['دافئ', { b: 105, c: 105, s: 110, sep: 30, h: -10 }], ['بارد', { b: 100, c: 105, s: 105, h: 25 }],
   ['سينمائي', { b: 95, c: 125, s: 85, sep: 15, vig: 45 }], ['أبيض وأسود', { g: 100, c: 115 }], ['قديم', { sep: 70, c: 90, b: 105, vig: 50 }], ['باهت', { c: 80, s: 70, b: 115 }],
   ['درامي', { c: 150, s: 120, b: 90, vig: 35 }], ['نيون', { s: 220, c: 120, h: 40 }], ['سلبي', { inv: 100 }], ['حالم', { bl: 1.5, b: 112, s: 120 }],
 ];
+function aiTool(n, d, f) { const it = h('div', 'it', `${n}<small>${d}</small>`); it.onclick = f; $('#ai').append(it); return it; }
 function buildLeft() {
   $$('#tabs button').forEach(b => b.onclick = () => { $$('#tabs button').forEach(x => x.classList.toggle('on', x === b)); $$('.tab').forEach(t => t.classList.toggle('on', t.id === 'tab-' + b.dataset.tab)); });
   const tp = $('#textPresets');
@@ -519,15 +658,14 @@ function buildLeft() {
   const fx = $('#fx');
   ANIMS.forEach(([k, n]) => { const it = h('div', 'it', n); it.onclick = () => { const c = selClip(); if (!c || c.type === 'audio') return toast('حدّد مقطعاً مرئياً أولاً'); pushUndo(); c.anim = k; renderProps(); afterEdit(); }; fx.append(it); });
   [['ظهور تدريجي (0.5ث)', 'fadeIn'], ['اختفاء تدريجي (0.5ث)', 'fadeOut']].forEach(([n, k]) => { const it = h('div', 'it', n); it.onclick = () => { const c = selClip(); if (!c) return toast('حدّد مقطعاً أولاً'); pushUndo(); c[k] = .5; renderProps(); afterEdit(true); }; fx.append(it); });
+  const trn = $('#trn');
+  TRANS.forEach(([k, n]) => { const it = h('div', 'it', n); it.onclick = () => { const c = selClip(); if (!c || c.type === 'audio') return toast('حدّد مقطعاً مرئياً أولاً'); pushUndo(); c.trans = { type: k, dur: c.trans.dur || .6 }; renderProps(); renderTimeline(); sync(time, false); seek(c.start); toast(k === 'none' ? 'تمت إزالة الانتقال' : 'تم تطبيق الانتقال: ' + n); }; trn.append(it); });
   const ai = $('#ai');
-  const tool = (n, d, f) => { const it = h('div', 'it', `${n}<small>${d}</small>`); it.onclick = f; ai.append(it); };
+  const tool = (n, d, f) => aiTool(n, d, f);
   tool('✨ تحسين تلقائي للألوان', 'تحليل إطار المقطع وضبط السطوع والتباين', autoEnhance);
   tool('🟩 إزالة الخلفية الخضراء', 'Chroma Key فعلي على المقطع المحدد', () => { const c = selClip(); if (!c || (c.type !== 'video' && c.type !== 'image')) return toast('حدّد مقطع فيديو أو صورة'); pushUndo(); c.chroma.on = !c.chroma.on; renderProps(); afterEdit(); toast(c.chroma.on ? 'تم تفعيل إزالة الخلفية الخضراء' : 'تم إيقافها'); });
   tool('🔇 تقليل الضوضاء الصوتية', 'فلترة الترددات (ليس نموذج ذكاء اصطناعي)', () => { const c = selClip(); if (!c || (c.type !== 'video' && c.type !== 'audio')) return toast('حدّد مقطع صوت أو فيديو'); pushUndo(); c.denoise = !c.denoise; renderProps(); afterEdit(); toast(c.denoise ? 'تم تفعيل تقليل الضوضاء' : 'تم الإيقاف'); });
   tool('🔊 استخراج الصوت', 'فصل صوت الفيديو إلى مسار مستقل', extractAudio);
-  ai.append(h('h4', 'sub', 'غير متاحة في هذه النسخة (تحتاج نموذجاً أو خدمة خارجية)'));
-  [['الترجمة التلقائية', 'تتطلب نموذج تفريغ صوتي مثل Whisper'], ['النص إلى صوت', 'تتطلب خدمة TTS؛ ولا يمكن تسجيل صوت المتصفح داخل التصدير'], ['إزالة الخلفية بالذكاء الاصطناعي', 'تتطلب نموذج تقطيع مثل MediaPipe/RMBG'], ['تتبع العناصر والتعرف على الوجوه', 'تتطلب نموذج رؤية حاسوبية'], ['تحسين الجودة (Upscale)', 'تتطلب نموذج Super-Resolution'], ['فيديو من نص', 'تتطلب نموذج توليد فيديو عبر API']]
-    .forEach(([n, d]) => ai.append(h('div', 'it off', `${n}<small>${d}</small>`)));
   // مؤثرات صوتية مولَّدة
   const sf = $('#sfx');
   Object.keys(SFX).forEach(k => { const it = h('div', 'it', SFX[k].n); it.onclick = async () => { const blob = await makeSfx(k); const m = await addMediaFromBlob(blob, SFX[k].n, 'audio', { duration: SFX[k].d, hasAudio: true }); addMediaClip(m.id, { lane: 'a2', start: time }); }; sf.append(it); });
@@ -581,15 +719,17 @@ let dirtyT = null;
 function dirty() { if (!cfg.autosave) return; clearTimeout(dirtyT); dirtyT = setTimeout(() => saveProject(true), 1500); }
 async function saveProject(silent) {
   try {
-    await tx('readwrite', s => s.put({ id: S.id, name: S.name, ratio: S.ratio, clips: S.clips, updated: Date.now(), media: Object.values(S.media).map(m => ({ id: m.id, name: m.name, type: m.type, duration: m.duration, blob: m.blob, hasAudio: m.hasAudio })) }));
+    await tx('readwrite', s => s.put({ id: S.id, name: S.name, ratio: S.ratio, clips: S.clips, lanes: LS, updated: Date.now(), media: Object.values(S.media).map(m => ({ id: m.id, name: m.name, type: m.type, duration: m.duration, blob: m.blob, hasAudio: m.hasAudio })) }));
     if (!silent) toast('تم حفظ المشروع');
   } catch (e) { toast('تعذّر الحفظ: ' + (e.message || e)); }
 }
 async function loadProject(p) {
   pause(); for (const m of Object.values(S.media)) URL.revokeObjectURL(m.url); els.clear();
-  S.id = p.id; S.name = p.name; S.ratio = p.ratio; S.clips = p.clips; S.media = {};
+  S.id = p.id; S.name = p.name; S.ratio = p.ratio; S.media = {};
+  const base = newClip({}); S.clips = p.clips.map(c => ({ ...base, ...c, f: { ...base.f, ...c.f }, crop: { ...base.crop, ...(c.crop || {}) }, kf: c.kf || {}, trans: c.trans || base.trans }));
+  Object.keys(LS).forEach(k => delete LS[k]); Object.assign(LS, p.lanes || {});
   for (const m of p.media) { S.media[m.id] = { ...m, url: URL.createObjectURL(m.blob) }; if (m.type !== 'image') computePeaks(S.media[m.id]); }
-  sel = null; time = 0; undoS = []; redoS = []; $('#ratio').value = S.ratio.join(':'); applyRatio(); renderLib(); afterStruct();
+  setSel(null); time = 0; undoS = []; redoS = []; $('#ratio').value = S.ratio.join(':'); applyRatio(); renderLib(); afterStruct();
 }
 function newProject() { loadProject({ id: uid(), name: 'مشروع جديد', ratio: [16, 9], clips: [], media: [] }); }
 function modal(title, build, btns) {
@@ -659,7 +799,7 @@ async function doExport(o, mp4) {
 /* ---------------- ربط الواجهة ---------------- */
 $('#file').onchange = async e => { await importFiles(e.target.files); e.target.value = ''; };
 $('#bPlay').onclick = () => playing ? pause() : play();
-$('#bUndo').onclick = undo; $('#bRedo').onclick = redo; $('#bSplit').onclick = splitClip; $('#bDel').onclick = delClip; $('#bDup').onclick = dupClip;
+$('#bUndo').onclick = undo; $('#bRedo').onclick = redo; $('#bSplit').onclick = splitClip; $('#bMerge').onclick = mergeClips; $('#bGap').onclick = closeGaps; $('#bDel').onclick = delClip; $('#bDup').onclick = dupClip;
 $('#ratio').onchange = e => { pushUndo(); S.ratio = e.target.value.split(':').map(Number); applyRatio(); };
 addEventListener('keydown', e => {
   if (/INPUT|TEXTAREA|SELECT/.test(e.target.tagName) && e.target.type !== 'range') return;
@@ -675,5 +815,20 @@ addEventListener('keydown', e => {
 });
 addEventListener('beforeunload', e => { if (cfg.autosave) saveProject(true); });
 
+/* فواصل اللوحات القابلة للسحب */
+(function () {
+  const root = document.documentElement; let saved = {}; try { saved = JSON.parse(localStorage.getItem('ve-layout') || '{}'); } catch (e) {}
+  for (const k in saved) root.style.setProperty(k, saved[k]);
+  const cur = v => parseInt(getComputedStyle(root).getPropertyValue(v)) || 0;
+  const mk = (el, v, calc, lo, hi) => el.addEventListener('pointerdown', e => {
+    e.preventDefault(); el.setPointerCapture(e.pointerId); el.classList.add('on'); const s0 = cur(v), x0 = e.clientX, y0 = e.clientY;
+    const mv = ev => { const val_ = clamp(calc(s0, ev.clientX - x0, ev.clientY - y0), lo, hi); root.style.setProperty(v, val_ + 'px'); saved[v] = val_ + 'px'; renderTimeline(); };
+    const up = () => { el.classList.remove('on'); el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up); try { localStorage.setItem('ve-layout', JSON.stringify(saved)); } catch (e) {} };
+    el.addEventListener('pointermove', mv); el.addEventListener('pointerup', up);
+  });
+  mk($('#spA'), '--wlib', (s0, dx) => s0 - dx, 200, 560);   // المكتبة على اليمين (RTL)
+  mk($('#spB'), '--wprops', (s0, dx) => s0 + dx, 220, 560); // الخصائص على اليسار
+  mk($('#spT'), '--tl', (s0, dx, dy) => s0 - dy, 150, 600);
+})();
 buildLeft(); applyRatio(); renderTimeline(); renderProps();
 window.__ve = { S, addMediaFromBlob, addMediaClip, addOverlay, splitClip, seek, play, pause, render, get time() { return time; } };

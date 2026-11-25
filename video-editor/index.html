@@ -4,9 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>محرر الفيديو</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Tajawal:wght@400;700&family=Amiri:wght@400;700&family=Reem+Kufi&family=Lalezar&family=Almarai:wght@400;700&family=El+Messiri:wght@400;700&family=Changa:wght@400;700&display=swap">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute"><defs>
+<filter id="sh1"><feConvolveMatrix order="3" kernelMatrix="0 -.5 0 -.5 3 -.5 0 -.5 0" preserveAlpha="true"/></filter>
+<filter id="sh2"><feConvolveMatrix order="3" kernelMatrix="0 -1 0 -1 5 -1 0 -1 0" preserveAlpha="true"/></filter>
+<filter id="sh3"><feConvolveMatrix order="3" kernelMatrix="-1 -1 -1 -1 9 -1 -1 -1 -1" preserveAlpha="true"/></filter>
+</defs></svg>
 <header>
   <div class="brand">🎬 محرر الفيديو</div>
   <div class="tools">
@@ -14,6 +21,8 @@
     <button id="bRedo" title="إعادة (Ctrl+Y)">↷</button>
     <button id="bSplit" title="تقسيم (S)">✂ تقسيم</button>
     <button id="bDup" title="تكرار (Ctrl+D)">⧉ تكرار</button>
+    <button id="bMerge" title="دمج المقاطع المتصلة">⊕ دمج</button>
+    <button id="bGap" title="حذف الفراغات في المسار الرئيسي">⇤ إغلاق الفراغات</button>
     <button id="bDel" title="حذف (Delete)">🗑 حذف</button>
     <select id="ratio" title="نسبة العرض">
       <option value="16:9">16:9</option><option value="9:16">9:16</option>
@@ -35,6 +44,7 @@
       <button data-tab="stickers">ملصقات</button>
       <button data-tab="filters">فلاتر</button>
       <button data-tab="fx">تأثيرات</button>
+      <button data-tab="trans">انتقالات</button>
       <button data-tab="ai">ذكاء</button>
     </nav>
     <section id="tab-media" class="tab on">
@@ -51,10 +61,12 @@
     </section>
     <section id="tab-text" class="tab"><div id="textPresets" class="list"></div></section>
     <section id="tab-stickers" class="tab"><div id="stk" class="grid emoji"></div></section>
+    <section id="tab-trans" class="tab"><div id="trn" class="grid"></div><p class="hint">حدّد مقطعاً ثم اختر الانتقال؛ يُطبَّق عند بدايته (ويتداخل مع المقطع السابق المتصل به).</p></section>
     <section id="tab-ai" class="tab"><div id="ai" class="list"></div></section>
     <section id="tab-filters" class="tab"><div id="flt" class="grid"></div><p class="hint">حدّد مقطعاً ثم اختر الفلتر.</p></section>
     <section id="tab-fx" class="tab"><div id="fx" class="list"></div><p class="hint">حدّد مقطعاً ثم اختر التأثير.</p></section>
   </aside>
+  <div class="split v" id="spA"></div>
 
   <section id="center">
     <div id="stage"><canvas id="cv"></canvas></div>
@@ -65,10 +77,12 @@
       <label>تكبير <input id="zoom" type="range" min="10" max="300" value="60" dir="ltr"></label>
     </div>
   </section>
+  <div class="split v" id="spB"></div>
 
   <aside id="right"><div id="props"><p class="hint">حدّد مقطعاً من الخط الزمني لتعديل خصائصه.</p></div></aside>
 </main>
 
+<div class="split h" id="spT"></div>
 <section id="timeline">
   <div id="tlScroll" dir="ltr">
     <div id="tlInner">
@@ -82,5 +96,6 @@
 <div id="overlay" hidden><div class="box"><div id="ovTxt">جاري التصدير…</div><progress id="prog" max="100" value="0"></progress><small>أبقِ هذا التبويب ظاهراً حتى ينتهي التصدير.</small><button id="ovCancel">إلغاء</button></div></div>
 <div id="toast" hidden></div>
 <script src="app.js"></script>
+<script src="ai.js"></script>
 </body>
 </html>
