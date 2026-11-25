@@ -1,7 +1,9 @@
 :root{--wlib:310px;--wprops:300px;--tl:330px;--bg:#0e0f12;--p1:#17181d;--p2:#1f2128;--p3:#2a2d37;--tx:#e8e9ee;--mut:#8b8fa0;--ac:#2ee6d0;--ac2:#ff3d71;--bd:#2c2f3a}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
-body{background:var(--bg);color:var(--tx);font:14px/1.4 system-ui,"Segoe UI",Tahoma,sans-serif;display:grid;grid-template-rows:48px minmax(0,1fr) 6px var(--tl);grid-template-columns:minmax(0,1fr);overflow:hidden}
+body{background:var(--bg);color:var(--tx);font:14px/1.4 system-ui,"Segoe UI",Tahoma,sans-serif;overflow:hidden}
+#view-editor{height:100vh;grid-template-rows:48px minmax(0,1fr) 6px var(--tl);grid-template-columns:minmax(0,1fr);direction:rtl}
+#view-editor.on{display:grid}
 button,select,input{font:inherit;color:inherit}
 button,select{background:var(--p3);border:1px solid var(--bd);border-radius:6px;padding:5px 10px;cursor:pointer}
 button:hover{background:#363a47}

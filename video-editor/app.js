@@ -718,14 +718,15 @@ const tx = async (mode, fn) => { const d = await idb; return new Promise((res, r
 let dirtyT = null;
 function dirty() { if (!cfg.autosave) return; clearTimeout(dirtyT); dirtyT = setTimeout(() => saveProject(true), 1500); }
 async function saveProject(silent) {
+  if (!S.opened) return;
   try {
-    await tx('readwrite', s => s.put({ id: S.id, name: S.name, ratio: S.ratio, clips: S.clips, lanes: LS, updated: Date.now(), media: Object.values(S.media).map(m => ({ id: m.id, name: m.name, type: m.type, duration: m.duration, blob: m.blob, hasAudio: m.hasAudio })) }));
+    await tx('readwrite', s => s.put({ id: S.id, name: S.name, ratio: S.ratio, clips: S.clips, lanes: LS, owner: window.__owner || 'guest', created: S.created || (S.created = Date.now()), dur: total(), thumb: (typeof thumbData === 'function' ? thumbData() : null), updated: Date.now(), media: Object.values(S.media).map(m => ({ id: m.id, name: m.name, type: m.type, duration: m.duration, blob: m.blob, hasAudio: m.hasAudio })) }));
     if (!silent) toast('تم حفظ المشروع');
   } catch (e) { toast('تعذّر الحفظ: ' + (e.message || e)); }
 }
 async function loadProject(p) {
   pause(); for (const m of Object.values(S.media)) URL.revokeObjectURL(m.url); els.clear();
-  S.id = p.id; S.name = p.name; S.ratio = p.ratio; S.media = {};
+  S.id = p.id; S.name = p.name; S.ratio = p.ratio; S.media = {}; S.created = p.created || Date.now(); S.opened = true;
   const base = newClip({}); S.clips = p.clips.map(c => ({ ...base, ...c, f: { ...base.f, ...c.f }, crop: { ...base.crop, ...(c.crop || {}) }, kf: c.kf || {}, trans: c.trans || base.trans }));
   Object.keys(LS).forEach(k => delete LS[k]); Object.assign(LS, p.lanes || {});
   for (const m of p.media) { S.media[m.id] = { ...m, url: URL.createObjectURL(m.blob) }; if (m.type !== 'image') computePeaks(S.media[m.id]); }
@@ -752,7 +753,7 @@ $('#bProj').onclick = async () => {
 $('#bSet').onclick = () => modal('الإعدادات', body => {
   [['snap', 'الالتصاق بحواف المقاطع'], ['wave', 'عرض الموجات الصوتية'], ['autosave', 'الحفظ التلقائي']].forEach(([k, n]) => {
     const r = h('div', 'row'), l = h('label', '', n), i = h('input'); i.type = 'checkbox'; i.checked = cfg[k];
-    i.onchange = () => { cfg[k] = i.checked; localStorage.setItem('ve-cfg', JSON.stringify(cfg)); renderTimeline(); }; r.append(l, i); body.append(r);
+    i.onchange = () => { cfg[k] = i.checked; localStorage.setItem('ve-cfg', JSON.stringify(cfg)); if (typeof SET !== 'undefined') { SET[k] = i.checked; saveSet(); } renderTimeline(); }; r.append(l, i); body.append(r);
   });
   body.append(h('p', 'hint', 'يُحفظ المشروع وملفات الوسائط داخل متصفحك فقط (IndexedDB) ولا تُرسل إلى أي خادم.'));
 }, [['إغلاق', m => m.remove(), 'primary']]);
@@ -761,7 +762,7 @@ $('#bSet').onclick = () => modal('الإعدادات', body => {
 $('#bExport').onclick = () => {
   if (!total()) return toast('لا يوجد محتوى للتصدير');
   const mp4 = window.MediaRecorder && ['video/mp4;codecs=avc1,mp4a.40.2', 'video/mp4'].find(t => MediaRecorder.isTypeSupported(t));
-  const o = { short: 1080, fps: 30, q: 1 };
+  const o = { short: 1080, fps: 30, q: 1, ...(typeof SET !== 'undefined' ? SET.exp : {}) };
   modal('تصدير الفيديو', body => {
     const row = (n, key, opts) => { const r = h('div', 'row'), l = h('label', '', n), s = h('select'); opts.forEach(([v, t]) => { const e = h('option', '', t); e.value = v; s.append(e); }); s.value = o[key]; s.onchange = () => o[key] = +s.value; r.append(l, s); body.append(r); };
     row('الدقة', 'short', [[480, '480p'], [720, '720p'], [1080, '1080p (Full HD)'], [1440, '2K'], [2160, '4K (يتطلب جهازاً قوياً)']]);
@@ -787,7 +788,7 @@ async function doExport(o, mp4) {
     exporting = null; cv.width = pw; cv.height = ph_; $('#overlay').hidden = true; seek(0);
     if (cancelled) return toast('تم إلغاء التصدير'); if (failed) return toast('فشل التصدير: ' + (failed.message || failed));
     const blob = new Blob(chunks, { type: mime.split(';')[0] }), a = h('a'); a.href = URL.createObjectURL(blob); a.download = (S.name || 'video') + '.' + ext; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 5e3);
-    toast(`تم التصدير: ${(blob.size / 1048576).toFixed(1)} MB`, 4000);
+    toast(`تم التصدير: ${(blob.size / 1048576).toFixed(1)} MB`, 4000); if (typeof onExported === 'function') onExported(blob);
   };
   mr.onstop = finish;
   $('#prog').value = 0; $('#ovTxt').textContent = `جاري التصدير ${W}×${H} @${o.fps}fps…`; $('#overlay').hidden = false;
