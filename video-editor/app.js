@@ -183,10 +183,10 @@ function play() {
   if (playing || !total()) return;
   audioCtx(); AC.resume();
   if (time >= total() - .02) time = 0;
-  playing = true; t0 = performance.now(); tS = time; $('#bPlay').textContent = '⏸'; requestAnimationFrame(tick);
+  playing = true; t0 = performance.now(); tS = time; $('#bPlay').innerHTML = (typeof ic === 'function' ? ic('pause', 20) : '⏸'); requestAnimationFrame(tick);
 }
 function pause() {
-  if (!playing) return; playing = false; $('#bPlay').textContent = '▶';
+  if (!playing) return; playing = false; $('#bPlay').innerHTML = (typeof ic === 'function' ? ic('play', 20) : '▶');
   for (const e of els.values()) if (e.pause) e.pause();
 }
 function tick() {
@@ -407,11 +407,25 @@ function renderTimeline() {
   }
   movePlayhead(); updateTC();
 }
+async function makeThumb(m) {
+  if (m.thumb || m.type === 'audio') return;
+  try {
+    const c = document.createElement('canvas'); c.height = 54;
+    if (m.type === 'image') { const i = new Image(); i.src = m.url; await i.decode(); c.width = Math.max(20, Math.round(54 * i.naturalWidth / i.naturalHeight)); c.getContext('2d').drawImage(i, 0, 0, c.width, 54); }
+    else {
+      const v = document.createElement('video'); v.muted = true; v.preload = 'auto'; v.src = m.url; await new Promise(r => { v.onloadeddata = r; v.onerror = r; setTimeout(r, 4000); });
+      v.currentTime = Math.min(.2, (v.duration || 1) / 2); await new Promise(r => { v.onseeked = r; setTimeout(r, 1500); });
+      c.width = Math.max(20, Math.round(54 * (v.videoWidth || 16) / (v.videoHeight || 9))); c.getContext('2d').drawImage(v, 0, 0, c.width, 54);
+    }
+    m.thumb = c.toDataURL('image/jpeg', .6); renderTimeline();
+  } catch (e) { m._tp = false; }
+}
 function clipLabel(c) { return c.type === 'text' ? '✎ ' + (c.text || '').split('\n')[0] : c.type === 'sticker' ? c.text : ({ video: '🎞 ', image: '🖼 ', audio: '🎵 ' }[c.type]) + (c.name || ''); }
 function clipEl(c) {
   const d = h('div', 'clip ' + c.type + (c.id === sel ? ' sel' : selSet.has(c.id) ? ' multi' : ''));
   d.dataset.id = c.id; d.style.left = c.start * pps + 'px'; d.style.width = Math.max(6, c.dur * pps) + 'px';
   const m = S.media[c.mediaId];
+  if (m && (c.type === 'video' || c.type === 'image')) { if (m.thumb) { d.style.backgroundImage = `url(${m.thumb})`; d.style.backgroundSize = 'auto 100%'; d.style.backgroundRepeat = 'repeat-x'; } else if (!m._tp) { m._tp = true; makeThumb(m); } }
   if (cfg.wave && m && m.peaks && (c.type === 'audio' || c.type === 'video')) {
     const w = Math.max(6, Math.round(c.dur * pps)); const cn = h('canvas'); cn.width = w; cn.height = LANE_H - 8; cn.style.cssText = 'position:absolute;inset:0;opacity:.55;pointer-events:none';
     const x = cn.getContext('2d'); x.fillStyle = '#fff'; const mid = cn.height / 2;
@@ -421,7 +435,7 @@ function clipEl(c) {
     }
     d.append(cn);
   }
-  const lb = h('span'); lb.textContent = clipLabel(c); lb.style.position = 'relative'; d.append(lb);
+  const lb = h('span'); lb.textContent = clipLabel(c); lb.style.cssText = 'position:relative;background:#000a;border-radius:4px;padding:0 5px'; d.append(lb);
   if (c.trans && c.trans.type !== 'none') { const t = h('div', 'tr'); t.style.width = c.trans.dur * pps + 'px'; d.append(t); }
   const kt = new Set(); Object.values(c.kf || {}).forEach(a => a.forEach(q => kt.add(q.t)));
   kt.forEach(t => { const k = h('div', 'kf'); k.style.left = t * pps + 'px'; d.append(k); });

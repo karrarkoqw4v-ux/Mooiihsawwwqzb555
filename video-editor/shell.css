@@ -172,3 +172,32 @@ body.managing .pcard .kb{display:none}
   #right{padding-bottom:30px}
 }
 .badge[hidden]{display:none!important}
+
+/* ===== تصميم المحرر: ثيم داكن ثابت وشريط أدوات للخط الزمني ===== */
+#view-editor{--bg:#0b0c0f;--p1:#14151a;--p2:#1b1d24;--p3:#272a33;--tx:#eceef3;--mut:#8a8fa0;--bd:#252831;background:var(--bg);color:var(--tx)}
+#view-editor header{background:#0f1015;border-bottom:1px solid #1d1f27;padding:0 12px;gap:10px;height:50px}
+#view-editor header button,#view-editor header select{background:var(--p2);border:1px solid transparent;border-radius:9px;padding:7px 12px;display:inline-flex;align-items:center;gap:6px;transition:.15s}
+#view-editor header button:hover{background:var(--p3)}
+#view-editor header .brand{flex:1;display:flex;justify-content:center}
+#view-editor header button.primary{background:linear-gradient(135deg,var(--ac),#6c5ce7);color:#fff;font-weight:700;padding:8px 18px}
+.pname{text-align:center;font-size:15px!important;width:260px!important}
+#tlbar{height:42px;display:flex;align-items:center;gap:2px;padding:0 10px;background:var(--p1);border-bottom:1px solid var(--bd);flex:none}
+#tlbar button{background:none;border:0;border-radius:8px;padding:6px 10px;color:var(--tx);display:inline-flex;gap:6px;align-items:center;font-size:12.5px;cursor:pointer}
+#tlbar button:hover{background:var(--p3)}#tlbar .sp{flex:1}#tlbar label{display:inline-flex;align-items:center;gap:6px;color:var(--mut)}
+#timeline{display:flex;flex-direction:column}#timeline #tlScroll{flex:1;height:auto;min-height:0}
+#transport{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:8px 16px;background:var(--p1)}
+#transport #tc{justify-self:start;font-size:13px;color:var(--mut)}
+#transport #bPlay{grid-column:2;width:44px;height:44px;border-radius:50%;background:var(--ac);color:#04221e;border:0;display:flex;align-items:center;justify-content:center;padding:0}
+#transport .sp{display:none}#transport #ratio{justify-self:end;background:var(--p2);border:1px solid var(--bd);border-radius:8px;padding:6px 10px;color:var(--tx)}
+#tabs{gap:0;background:#0f1015}
+#tabs button{flex:1 0 56px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 4px 8px;font-size:11px;color:var(--mut)}
+#tabs button.on{color:var(--ac)}
+#left{background:var(--p1)}#stage{background:#07080a}
+.clip{border-radius:7px;box-shadow:inset 0 0 0 1px #0007}
+.clip.video,.clip.image{background-color:#2b3652}.clip.sel{outline:2px solid #fff;box-shadow:0 0 0 4px #ffffff22}
+#playhead{background:#fff;width:2px}#playhead::before{border-top-color:#fff}
+.lane .lbl{background:var(--p1)}
+
+#transport #tc{grid-column:1;grid-row:1}#transport #bPlay{grid-column:2;grid-row:1}#transport #ratio{grid-column:3;grid-row:1}
+#tabs button{flex:1 0 48px!important}
+#tabs button{flex:1 1 0!important;min-width:0;font-size:10px!important;padding:9px 0 8px!important}#tabs{overflow:hidden}
