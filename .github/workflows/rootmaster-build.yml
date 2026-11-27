@@ -5,6 +5,9 @@ on:
     paths: ["rootmaster/**", ".github/workflows/rootmaster-build.yml"]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,3 +30,12 @@ jobs:
         with:
           name: rootmaster-debug-apk
           path: rootmaster/app/build/outputs/apk/debug/*.apk
+      - name: Publish public release with the APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk RootMaster-debug.apk
+          gh release delete rootmaster-latest --yes --cleanup-tag || true
+          gh release create rootmaster-latest RootMaster-debug.apk --target "$GITHUB_SHA" --prerelease \
+            --title "ROOT MASTER (debug build)" \
+            --notes "Debug-signed test build. Not tested on a device yet. Commit $GITHUB_SHA"
