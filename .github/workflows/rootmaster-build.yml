@@ -17,7 +17,8 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-      - uses: android-actions/setup-android@v3
+      - name: Make wrapper executable
+        run: chmod +x gradlew
       - name: Unit tests (engine)
         run: ./gradlew --no-daemon :engine:test
       - name: Build debug APK
