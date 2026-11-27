@@ -14,6 +14,7 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
+        resourceConfigurations += listOf("en", "ar")
     }
 
     buildTypes {
@@ -29,7 +30,6 @@ android {
     }
     kotlinOptions { jvmTarget = "17" }
     buildFeatures { compose = true }
-    androidResources { localeFilters += listOf("en", "ar") }
 }
 
 dependencies {
