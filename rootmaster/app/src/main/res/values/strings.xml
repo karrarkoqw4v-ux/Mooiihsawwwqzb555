@@ -165,4 +165,13 @@
     <string name="root_env">Root environment</string>
     <string name="integrity">Component integrity</string>
     <string name="system_status">System status</string>
+    <string name="control_panel_title">Control panel</string>
+    <string name="start_root">START ROOT</string>
+    <string name="next_step_label">Next step:</string>
+    <string name="next_not_supported">Stopped: this device is not supported by an official rooting method.</string>
+    <string name="next_rooted">Root is verified. Open Manage to review grants.</string>
+    <string name="next_reboot_verify">Waiting for you to restart the device, then root will be re-checked automatically.</string>
+    <string name="next_install_magisk">Open ROOT INSTALLATION to download and install the official Magisk app.</string>
+    <string name="next_unlock_bootloader">Unlock the bootloader from a computer (see the numbered steps in ROOT INSTALLATION), then come back here.</string>
+    <string name="next_patch_flash">Open ROOT INSTALLATION: patch the boot image in Magisk, flash it with fastboot from a computer, then restart.</string>
 </resources>

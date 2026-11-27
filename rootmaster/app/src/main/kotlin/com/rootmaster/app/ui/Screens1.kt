@@ -27,14 +27,28 @@ fun rootColor(v: RootVerdict): Color = when (v) {
     RootVerdict.VERIFICATION_FAILED, RootVerdict.DEVICE_NOT_SUPPORTED -> RM.Red
 }
 
+/** The one real "what do I do right now" hint, computed only from state this device actually produced. */
+private fun nextStepRes(rep: CompatibilityReport?, rv: RootVerdict?, magiskInstalled: Boolean, pending: Boolean): Int = when {
+    rep == null -> R.string.scanning
+    rv == RootVerdict.ROOT_INSTALLED -> R.string.next_rooted
+    rep.verdict == Verdict.NOT_SUPPORTED -> R.string.next_not_supported
+    pending -> R.string.next_reboot_verify
+    !magiskInstalled -> R.string.next_install_magisk
+    rep.verdict == Verdict.REQUIRES_UNLOCK || rep.verdict == Verdict.UNDETERMINED -> R.string.next_unlock_bootloader
+    else -> R.string.next_patch_flash
+}
+
 @Composable
 fun DashboardScreen(vm: MainViewModel) {
     val dev by vm.device.collectAsState()
     val rv by vm.rootVerdict.collectAsState()
     val rep by vm.report.collectAsState()
     val scan by vm.scan.collectAsState()
+    val probe by vm.probe.collectAsState()
+    val pending by vm.pendingVerification.collectAsState()
     val post by vm.postRebootVerdict.collectAsState()
     val unavailable = stringResource(R.string.unavailable)
+    val magiskInstalled = probe?.managerPackages?.contains("com.topjohnwu.magisk") == true
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         post?.let { v ->
@@ -45,11 +59,14 @@ fun DashboardScreen(vm: MainViewModel) {
             }
         }
         RMCard {
-            Title(stringResource(R.string.root_status))
-            if (rv == null) Muted(stringResource(R.string.scanning)) else Chip(stringResource(rv!!.res()), rootColor(rv!!))
-            rep?.let { Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) { Muted(stringResource(R.string.compat_label)); Chip(stringResource(it.verdict.res()), verdictColor(it.verdict)) } }
+            Title(stringResource(R.string.control_panel_title))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (rv != null) Chip(stringResource(rv.res()), rootColor(rv))
+                rep?.let { Chip(stringResource(it.verdict.res()), verdictColor(it.verdict)) }
+            }
+            Muted(stringResource(R.string.next_step_label) + " " + stringResource(nextStepRes(rep, rv, magiskInstalled, pending)))
+            ActionButton(stringResource(R.string.start_root), enabled = !scan.running) { vm.startRoot() }
             Muted(stringResource(R.string.status_note))
-            ActionButton(stringResource(R.string.rescan), enabled = !scan.running) { vm.runScan() }
         }
         RMCard {
             Title(stringResource(R.string.device_info))

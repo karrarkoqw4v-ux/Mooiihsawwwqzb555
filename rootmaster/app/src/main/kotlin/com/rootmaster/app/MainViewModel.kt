@@ -101,6 +101,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     // ---------- diagnostic scan (drives the terminal screen; progress = steps really completed) ----------
     fun runScan() { viewModelScope.launch(Dispatchers.IO) { scanNow() } }
 
+    // The 7 stages below are exactly what runs, in this order, every time. Nothing is logged
+    // that was not actually read or computed on this device just now.
     private suspend fun scanNow() {
         if (scan.value.running) return
         run {
@@ -115,11 +117,23 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             AppLog.info("${p.manufacturer} ${p.model} (${p.device}), Android ${p.release}, build ${p.buildId}")
             done(1)
 
-            AppLog.section("DEVICE INFORMATION")
+            AppLog.section("SYSTEM ANALYSIS")
             snap.rows.forEach { AppLog.info("${it.key}: ${it.value ?: "Unavailable"}") }
             done(2)
 
-            AppLog.section("COMPATIBILITY CHECK")
+            AppLog.section("PERMISSION CHECK")
+            refreshPerms()
+            perms.value.forEach { item ->
+                val status = when (item.status) {
+                    com.rootmaster.app.permissions.PermStatus.GRANTED -> "GRANTED"
+                    com.rootmaster.app.permissions.PermStatus.NOT_GRANTED -> "NOT GRANTED"
+                    com.rootmaster.app.permissions.PermStatus.UNSUPPORTED -> "UNSUPPORTED (no normal app can hold this)"
+                }
+                AppLog.info("${item.id}: $status, user decision=${item.consent?.toString() ?: "undecided"}")
+            }
+            done(3)
+
+            AppLog.section("ROOT COMPATIBILITY")
             var rep = CompatibilityEngine.evaluate(p, false)
             report.value = rep
             rep.checks.forEach { c ->
@@ -127,14 +141,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 AppLog.add(if (c.result == CheckResult.FAIL) com.rootmaster.app.core.Level.WARN else com.rootmaster.app.core.Level.INFO, "${c.id.name}: $lvl ${c.detail}")
             }
             rep.blockers.forEach { AppLog.error("BLOCKER: ${it.name}") }
-            done(3)
-
-            AppLog.section("ROOT ENVIRONMENT CHECK")
-            val pr = RootDetector.probe(ctx)
-            probe.value = pr
+            AppLog.info("Install path: ${rep.method}, target partition: ${rep.bootTarget}")
             done(4)
 
             AppLog.section("COMPONENT VERIFICATION")
+            val pr = RootDetector.probe(ctx)
+            probe.value = pr
             RootDetector.installedManagers(ctx).forEach {
                 AppLog.info("${RootDetector.MANAGERS[it]} app version: ${RootDetector.managerVersion(ctx, it) ?: "?"}")
             }
@@ -145,16 +157,16 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             }
             done(5)
 
-            AppLog.section("INSTALLATION STATUS")
+            AppLog.section("INSTALLATION")
+            AppLog.info("Magisk app installed: ${pr.managerPackages.contains("com.topjohnwu.magisk")}")
+            AppLog.info("Verified Magisk file ready to install: ${install.value.file == FileStatus.VERIFIED}")
+            done(6)
+
+            AppLog.section("ROOT VERIFICATION")
             val verdict = RootClassifier.classify(pr, rep.verdict != Verdict.NOT_SUPPORTED)
             rootVerdict.value = verdict
             rep = CompatibilityEngine.evaluate(p, verdict == RootVerdict.ROOT_INSTALLED)
             report.value = rep
-            AppLog.info("Magisk app installed: ${pr.managerPackages.contains("com.topjohnwu.magisk")}")
-            AppLog.info("Compatibility verdict: ${rep.verdict}")
-            done(6)
-
-            AppLog.section("FINAL VERIFICATION")
             when (verdict) {
                 RootVerdict.ROOT_INSTALLED -> AppLog.ok("ROOT INSTALLED (su returned uid=0)")
                 RootVerdict.ROOT_NOT_DETECTED -> AppLog.warn("ROOT NOT DETECTED")
@@ -165,12 +177,33 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    /**
+     * START ROOT: re-runs every real check (device, permissions, compatibility, components, root
+     * state) and then automatically continues as far as the device's own protections allow —
+     * looking up the verified Magisk release when the device qualifies and internet was allowed.
+     * It never unlocks the bootloader, flashes a partition or claims root without `su` confirming it.
+     */
+    fun startRoot() {
+        viewModelScope.launch(Dispatchers.IO) {
+            scanNow()
+            val rep = report.value ?: return@launch
+            if (rep.verdict == Verdict.NOT_SUPPORTED || rep.verdict == Verdict.ALREADY_ROOTED) return@launch
+            if (consented("internet") && install.value.release == null) {
+                AppLog.section("INSTALLATION")
+                AppLog.info("START ROOT: device qualifies for ${rep.method}; looking up the official release")
+                val rel = MagiskInstaller.fetchLatest()
+                if (rel != null) AppLog.ok("Latest release ${rel.tag}: ${rel.assetName}")
+                install.update { it.copy(release = rel, lookupFailed = rel == null) }
+            }
+        }
+    }
+
     // ---------- installation ----------
     fun fetchRelease() {
         if (!consented("internet")) { install.update { it.copy(error = "internet permission declined") }; return }
         viewModelScope.launch(Dispatchers.IO) {
             install.update { it.copy(lookingUp = true, lookupFailed = false, error = null) }
-            AppLog.section("INSTALLATION STATUS")
+            AppLog.section("INSTALLATION")
             AppLog.info("Querying official Magisk release (github.com/topjohnwu/Magisk)")
             val rel = MagiskInstaller.fetchLatest()
             if (rel != null) AppLog.ok("Latest release ${rel.tag}: ${rel.assetName}, ${rel.size} bytes, digest ${rel.digest ?: "NOT PUBLISHED"}")

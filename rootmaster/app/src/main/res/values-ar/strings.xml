@@ -165,4 +165,13 @@
     <string name="root_env">بيئة Root</string>
     <string name="integrity">سلامة المكونات</string>
     <string name="system_status">حالة النظام</string>
+    <string name="control_panel_title">لوحة التشغيل</string>
+    <string name="start_root">START ROOT</string>
+    <string name="next_step_label">الخطوة التالية:</string>
+    <string name="next_not_supported">توقفت العملية: هذا الجهاز غير مدعوم بطريقة روت رسمية.</string>
+    <string name="next_rooted">تم التحقق من Root. افتح تبويب الإدارة لمراجعة الموافقات.</string>
+    <string name="next_reboot_verify">بانتظار إعادة تشغيلك للجهاز، وسيُعاد فحص Root تلقائياً بعدها.</string>
+    <string name="next_install_magisk">افتح ROOT INSTALLATION لتنزيل وتثبيت تطبيق Magisk الرسمي.</string>
+    <string name="next_unlock_bootloader">افتح Bootloader من كمبيوتر (راجع الخطوات المرقّمة في ROOT INSTALLATION)، ثم عد إلى هنا.</string>
+    <string name="next_patch_flash">افتح ROOT INSTALLATION: عدّل صورة boot في Magisk، فلّشها بـ fastboot من كمبيوتر، ثم أعد التشغيل.</string>
 </resources>

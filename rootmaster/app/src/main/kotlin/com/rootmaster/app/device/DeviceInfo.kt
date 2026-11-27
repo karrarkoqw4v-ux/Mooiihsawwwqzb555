@@ -61,6 +61,13 @@ object DeviceInfo {
         val selinux = selinuxMode()
         val cpu = cpuModel()
         val kernel = System.getProperty("os.version")
+        // Settings.Global.ADB_ENABLED is a public, unprotected key: any app may read it.
+        val usbDebugging = runCatching { Settings.Global.getInt(ctx.contentResolver, Settings.Global.ADB_ENABLED) }
+            .getOrNull()?.let { it == 1 }
+        // There is no public Android API letting a normal app read the live on/off state of the
+        // "OEM unlocking" developer-options toggle (OemLockManager.isOemUnlockAllowed() needs a
+        // signature/privileged permission). ro.oem_unlock_supported above only says whether the
+        // hardware offers that toggle at all, not whether the user has switched it on.
 
         val profile = DeviceProfile(
             manufacturer = Build.MANUFACTURER, brand = Build.BRAND, model = Build.MODEL, device = Build.DEVICE,
@@ -89,7 +96,10 @@ object DeviceInfo {
             InfoRow("Charging state", charging),
             InfoRow("Bootloader", when (locked) { Tri.YES -> "Locked"; Tri.NO -> "Unlocked"; Tri.UNKNOWN -> null }),
             InfoRow("Verified Boot", vbState),
-            InfoRow("OEM unlock supported", when (oemSupported) { Tri.YES -> "Yes"; Tri.NO -> "No"; Tri.UNKNOWN -> null }),
+            InfoRow("OEM unlock supported by hardware", when (oemSupported) { Tri.YES -> "Yes"; Tri.NO -> "No"; Tri.UNKNOWN -> null }),
+            // Deliberately null: no normal app can read this toggle's live state (see note above).
+            InfoRow("OEM unlocking toggle (Developer options)", null),
+            InfoRow("USB debugging", usbDebugging?.let { if (it) "Enabled" else "Disabled" }),
             InfoRow("SELinux", selinux),
             InfoRow("A/B slots", when (ab) { Tri.YES -> "Yes ($slot)"; else -> null }),
             InfoRow("First API level", firstApi?.toString()),
