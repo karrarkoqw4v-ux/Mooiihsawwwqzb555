@@ -61,7 +61,7 @@ fun DashboardScreen(vm: MainViewModel) {
         RMCard {
             Title(stringResource(R.string.control_panel_title))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (rv != null) Chip(stringResource(rv.res()), rootColor(rv))
+                rv?.let { Chip(stringResource(it.res()), rootColor(it)) }
                 rep?.let { Chip(stringResource(it.verdict.res()), verdictColor(it.verdict)) }
             }
             Muted(stringResource(R.string.next_step_label) + " " + stringResource(nextStepRes(rep, rv, magiskInstalled, pending)))
