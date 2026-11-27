@@ -1,0 +1,41 @@
+name: ROOT MASTER build
+
+on:
+  push:
+    paths: ["rootmaster/**", ".github/workflows/rootmaster-build.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rootmaster
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Make wrapper executable
+        run: chmod +x gradlew
+      - name: Unit tests (engine)
+        run: ./gradlew --no-daemon :engine:test
+      - name: Build debug APK
+        run: ./gradlew --no-daemon :app:assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rootmaster-debug-apk
+          path: rootmaster/app/build/outputs/apk/debug/*.apk
+      - name: Publish public release with the APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp app/build/outputs/apk/debug/app-debug.apk RootMaster-debug.apk
+          gh release delete rootmaster-latest --yes --cleanup-tag || true
+          gh release create rootmaster-latest RootMaster-debug.apk --target "$GITHUB_SHA" --prerelease \
+            --title "ROOT MASTER (debug build)" \
+            --notes "Debug-signed test build. Not tested on a device yet. Commit $GITHUB_SHA"
