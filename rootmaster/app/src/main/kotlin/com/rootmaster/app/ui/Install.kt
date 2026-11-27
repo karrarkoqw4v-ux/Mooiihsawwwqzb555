@@ -18,9 +18,13 @@ import com.rootmaster.app.core.AppLog
 import com.rootmaster.engine.*
 
 @Composable
-private fun StepRow(text: String, state: String, color: Color) {
+private fun StepRow(text: String, state: String, color: Color, num: Int? = null) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(text, color = RM.Text, modifier = Modifier.weight(1f)); Chip(state, color)
+        Row(Modifier.weight(1f)) {
+            if (num != null) Text("$num.  ", color = RM.Muted)
+            Text(text, color = RM.Text)
+        }
+        Chip(state, color)
     }
 }
 
@@ -45,10 +49,28 @@ fun InstallScreen(vm: MainViewModel) {
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Title("ROOT INSTALLATION")
         RMCard {
-            Title(stringResource(R.string.compat_title))
-            rep?.let { Chip(stringResource(it.verdict.res()), verdictColor(it.verdict)) } ?: Muted(stringResource(R.string.scanning))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Title(stringResource(R.string.compat_title))
+                rep?.let { Chip(stringResource(it.verdict.res()), verdictColor(it.verdict)) }
+            }
+            if (rep == null) Muted(stringResource(R.string.scanning))
             if (!supported && rep != null) Muted(stringResource(R.string.install_blocked))
         }
+        // Step 1-5: the real procedure, in the order it actually happens. Each line is a live status, not a promise.
+        RMCard {
+            Title(stringResource(R.string.procedure))
+            Muted(stringResource(R.string.procedure_note))
+            StepRow(stringResource(R.string.step_unlock), when (rep?.checks?.firstOrNull { it.id == CheckId.BOOTLOADER }?.result) {
+                CheckResult.PASS -> ok; CheckResult.FAIL -> todo; else -> unknown }, RM.Muted, num = 1)
+            StepRow(stringResource(R.string.step_app), if (magiskInstalled) ok else todo, if (magiskInstalled) RM.Green else RM.Amber, num = 2)
+            StepRow(stringResource(R.string.step_patch), manual, RM.Blue, num = 3)
+            StepRow(stringResource(R.string.step_flash), manual, RM.Blue, num = 4)
+            StepRow(stringResource(R.string.step_verify), if (rooted) ok else todo, if (rooted) RM.Green else RM.Amber, num = 5)
+            rep?.let { Muted(stringResource(R.string.boot_target_label) + ": " + stringResource(it.bootTarget.res())) }
+            Text("fastboot flash <boot|init_boot> magisk_patched.img", color = RM.Blue)
+            Muted(stringResource(R.string.fastboot_note))
+        }
+        // Step 2 in detail: getting the Magisk app itself onto the device.
         RMCard {
             Title(stringResource(R.string.components))
             Muted(stringResource(R.string.components_note))
@@ -83,19 +105,7 @@ fun InstallScreen(vm: MainViewModel) {
             }
             if (perms.firstOrNull { it.id == "internet" }?.consent != true) Muted(stringResource(R.string.need_internet_consent))
         }
-        RMCard {
-            Title(stringResource(R.string.procedure))
-            Muted(stringResource(R.string.procedure_note))
-            StepRow(stringResource(R.string.step_unlock), when (rep?.checks?.firstOrNull { it.id == CheckId.BOOTLOADER }?.result) {
-                CheckResult.PASS -> ok; CheckResult.FAIL -> todo; else -> unknown }, RM.Muted)
-            StepRow(stringResource(R.string.step_app), if (magiskInstalled) ok else todo, if (magiskInstalled) RM.Green else RM.Amber)
-            StepRow(stringResource(R.string.step_patch), manual, RM.Blue)
-            StepRow(stringResource(R.string.step_flash), manual, RM.Blue)
-            StepRow(stringResource(R.string.step_verify), if (rooted) ok else todo, if (rooted) RM.Green else RM.Amber)
-            rep?.let { Muted(stringResource(R.string.boot_target_label) + ": " + stringResource(it.bootTarget.res())) }
-            Text("fastboot flash <boot|init_boot> magisk_patched.img", color = RM.Blue)
-            Muted(stringResource(R.string.fastboot_note))
-        }
+        // Step 5: after flashing from a computer, come back here to confirm and re-check.
         RMCard {
             Title(stringResource(R.string.reboot_title))
             Muted(stringResource(R.string.reboot_body))

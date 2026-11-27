@@ -137,7 +137,7 @@
     <string name="reboot_title">Restart and verify</string>
     <string name="reboot_body">After flashing, restart the device. When you open the app again it re-checks root automatically and shows the real result.</string>
     <string name="pending_verification">Waiting for restart</string>
-    <string name="prepare_reboot">Prepare restart</string>
+    <string name="prepare_reboot">Restart to activate root</string>
     <string name="reboot_dialog_body">The device will restart. Unsaved work is lost, and a bad image can cause a boot loop. The app never restarts the device without this confirmation. Without root the app cannot restart it for you: restart it yourself.</string>
     <string name="reboot_now">Restart now</string>
     <string name="i_will_reboot">I will restart it myself</string>

@@ -137,7 +137,7 @@
     <string name="reboot_title">إعادة التشغيل والتحقق</string>
     <string name="reboot_body">بعد التفليش أعد تشغيل الجهاز. عند فتح التطبيق مجدداً يعيد فحص Root تلقائياً ويعرض النتيجة الفعلية.</string>
     <string name="pending_verification">بانتظار إعادة التشغيل</string>
-    <string name="prepare_reboot">تجهيز إعادة التشغيل</string>
+    <string name="prepare_reboot">إعادة التشغيل لتفعيل الروت</string>
     <string name="reboot_dialog_body">سيُعاد تشغيل الجهاز. سيضيع العمل غير المحفوظ، وقد تسبب صورة سيئة حلقة إقلاع. لا يعيد التطبيق تشغيل الجهاز دون هذه الموافقة. بدون Root لا يستطيع التطبيق إعادة التشغيل نيابة عنك: أعد تشغيله بنفسك.</string>
     <string name="reboot_now">إعادة التشغيل الآن</string>
     <string name="i_will_reboot">سأعيد التشغيل بنفسي</string>
