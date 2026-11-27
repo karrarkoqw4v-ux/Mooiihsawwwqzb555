@@ -201,3 +201,51 @@ body.managing .pcard .kb{display:none}
 #transport #tc{grid-column:1;grid-row:1}#transport #bPlay{grid-column:2;grid-row:1}#transport #ratio{grid-column:3;grid-row:1}
 #tabs button{flex:1 0 48px!important}
 #tabs button{flex:1 1 0!important;min-width:0;font-size:10px!important;padding:9px 0 8px!important}#tabs{overflow:hidden}
+
+/* ===== محرر الهاتف (body.mobile) ===== */
+#mtools,#mph,#mMore{display:none}
+#mctl{display:contents}#mctl .mu{display:none}
+body.mobile .lbl2{display:none}
+body.mobile #view-editor{height:100dvh;grid-template-columns:minmax(0,1fr);grid-template-rows:46px minmax(0,1fr) 33vh 66px}
+body.mobile #view-editor>#spT{display:none}
+body.mobile #view-editor header{height:46px;gap:6px;padding:0 6px;overflow:hidden;white-space:nowrap}
+body.mobile #view-editor header>*:not(#bProj):not(.brand):not(#mMore):not(#bExport){display:none!important}
+body.mobile #bProj{padding:7px 9px;flex:none}
+body.mobile #mMore{display:inline-flex;flex:none;padding:7px 9px}
+body.mobile #bExport{flex:none;padding:7px 14px!important;font-size:13px}
+body.mobile .pname{width:100%!important;font-size:14px!important;min-width:0}
+body.mobile #view-editor header .brand{min-width:0}
+body.mobile #view-editor main{display:block;min-height:0;position:relative}
+body.mobile #center{height:100%;display:flex;flex-direction:column}
+body.mobile #stage{padding:6px;flex:1;min-height:0}
+body.mobile #transport{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 12px;flex:none}
+body.mobile #transport #tc{flex:1;font-size:12px;direction:ltr;text-align:start}
+body.mobile #mctl{display:flex;align-items:center;gap:10px}body.mobile #mctl .mu{display:flex}
+body.mobile #mctl button{background:none;border:0;color:var(--tx);padding:6px;display:flex;align-items:center;justify-content:center}
+body.mobile #mctl #bPlay{width:46px;height:46px;background:var(--ac);color:#04221e}
+body.mobile #transport #ratio{flex:1;max-width:84px;font-size:12px;padding:5px 6px}
+body.mobile #tlbar{display:none}
+body.mobile #timeline{position:relative;display:flex;flex-direction:column;min-height:0}
+body.mobile #playhead{display:none}
+body.mobile #mph{display:block;position:absolute;top:0;bottom:0;left:50%;width:2px;margin-left:-1px;background:#fff;z-index:30;pointer-events:none;box-shadow:0 0 6px #000a}
+body.mobile #mph::before{content:"";position:absolute;top:0;left:-5px;border:6px solid transparent;border-top-color:#fff}
+body.mobile .lane .lbl{display:none}
+body.mobile #tlScroll{touch-action:pan-x pan-y;overscroll-behavior:contain}
+body.mobile .clip{touch-action:pan-x pan-y;font-size:11px}
+body.mobile .clip .h{width:20px;touch-action:none;background:#fff5}
+body.mobile .clip.lift{transform:scale(1.04);box-shadow:0 8px 24px #000b;z-index:6}
+body.mobile #mtools{display:flex;overflow-x:auto;gap:2px;background:#0f1015;border-top:1px solid var(--bd);padding:4px 6px calc(4px + env(safe-area-inset-bottom));scrollbar-width:none}
+body.mobile #mtools::-webkit-scrollbar{display:none}
+body.mobile #mtools button{flex:0 0 68px;background:none;border:0;color:var(--tx);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:10.5px;padding:6px 0;border-radius:10px}
+body.mobile #mtools button:active{background:var(--p3)}
+body.mobile #left,body.mobile #right{position:fixed;inset:auto 0 0 0;height:46vh;z-index:120;transform:translateY(105%);transition:transform .25s ease;border:0;border-radius:20px 20px 0 0;box-shadow:0 -14px 50px #000c;padding-bottom:calc(14px + env(safe-area-inset-bottom));display:block}
+body.mobile #left.sheet,body.mobile #right.sheet{transform:none}
+body.mobile #right{padding:0 12px 24px}
+.sheet-h{display:none}
+body.mobile .sheet-h{display:flex;align-items:center;justify-content:center;position:sticky;top:0;z-index:5;background:var(--p1);padding:14px 10px 6px;margin:0 -12px}
+body.mobile #left .sheet-h{margin:0}
+body.mobile .sheet-h .grab{position:absolute;top:6px;left:50%;width:38px;height:4px;margin-left:-19px;background:var(--p3);border-radius:4px}
+body.mobile .sheet-h b{font-size:13px}body.mobile .sheet-h button{position:absolute;inset-inline-end:10px;top:8px;background:var(--p2);border:0;border-radius:50%;width:28px;height:28px;color:var(--tx)}
+body.mobile #tabs{position:sticky;top:44px;z-index:4}
+body.mobile #props .row>label{flex-basis:84px}
+body.mobile #props input[type=range]{height:28px}

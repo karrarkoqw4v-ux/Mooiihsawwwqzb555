@@ -141,7 +141,7 @@ function hookAudio(e) {
 function getEl(c) {
   let e = els.get(c.id); if (e) return e;
   const m = S.media[c.mediaId]; if (!m) return null;
-  if (c.type === 'image') { e = new Image(); e.src = m.url; }
+  if (c.type === 'image') { e = new Image(); e.onload = () => { if (!playing) render(); }; e.src = m.url; }
   else {
     e = document.createElement(c.type === 'audio' ? 'audio' : 'video');
     e.src = m.url; e.preload = 'auto'; e.playsInline = true;
@@ -385,14 +385,19 @@ function addOverlay(type, props) {
 
 /* ---------------- الخط الزمني ---------------- */
 const tlScroll = $('#tlScroll'), inner = $('#tlInner'), ruler = $('#ruler'), lanesEl = $('#lanes'), ph = $('#playhead');
+let TLOFF = 64, curLanes = LANES, progX = -1;
+const MOB = () => document.body.classList.contains('mobile');
+function setOff() { TLOFF = MOB() ? Math.round(tlScroll.clientWidth / 2) : 64; document.documentElement.style.setProperty('--off', TLOFF + 'px'); }
 function renderTimeline() {
-  const tot = Math.max(total() + 10, tlScroll.clientWidth / pps);
-  inner.style.width = (tot * pps + 64) + 'px';
+  setOff();
+  const tot = Math.max(total() + (MOB() ? 2 : 10), tlScroll.clientWidth / pps);
+  inner.style.width = (tot * pps + (MOB() ? TLOFF * 2 : TLOFF)) + 'px';
   const steps = [.5, 1, 2, 5, 10, 30, 60, 120, 300]; const step = steps.find(s => s * pps >= 80) || 600;
   ruler.innerHTML = '';
-  for (let t = 0; t < tot; t += step) { const k = h('div', 'tick', fmt(t).slice(0, step < 1 ? 5 : 5)); k.style.left = (64 + t * pps) + 'px'; ruler.append(k); }
+  for (let t = 0; t < tot; t += step) { const k = h('div', 'tick', fmt(t).slice(0, step < 1 ? 5 : 5)); k.style.left = (TLOFF + t * pps) + 'px'; ruler.append(k); }
   lanesEl.innerHTML = '';
-  for (const L of LANES) {
+  curLanes = MOB() ? LANES.filter(L => L.id === 'v1' || S.clips.some(c => c.lane === L.id)) : LANES;
+  for (const L of curLanes) {
     const lane = h('div', 'lane'); lane.dataset.lane = L.id;
     const st = LS[L.id] || (LS[L.id] = {}), lb = h('div', 'lbl'), ic = h('div', 'ic'); lb.append(h('span', '', L.label));
     [['lock', '🔒', 'قفل المسار'], ['hide', '👁', 'إخفاء المسار'], ['mute', '🔇', 'كتم المسار']].forEach(([k, em, tt]) => {
@@ -444,6 +449,7 @@ function clipEl(c) {
   return d;
 }
 function movePlayhead() {
+  if (MOB()) { const x = Math.round(time * pps); if (Math.abs(tlScroll.scrollLeft - x) > 1) { tlScroll.scrollLeft = x; progX = tlScroll.scrollLeft; } return; }
   ph.style.left = (64 + time * pps) + 'px';
   if (playing) { const x = time * pps, v = tlScroll.scrollLeft; if (x > v + tlScroll.clientWidth - 40 || x < v) tlScroll.scrollLeft = x - 80; }
 }
@@ -454,18 +460,21 @@ function snapT(t, c, edgeW = 0) {
   for (const p of pts) { if (Math.abs(p - t) < bd) { bd = Math.abs(p - t); best = p; } if (edgeW && Math.abs(p - (t + edgeW)) < bd) { bd = Math.abs(p - (t + edgeW)); best = p - edgeW; } }
   return best;
 }
-function laneAt(y) { const r = lanesEl.getBoundingClientRect(); const i = Math.floor((y - r.top) / LANE_H); return LANES[clamp(i, 0, LANES.length - 1)]; }
+function laneAt(y) { const r = lanesEl.getBoundingClientRect(); const i = Math.floor((y - r.top) / LANE_H); return curLanes[clamp(i, 0, curLanes.length - 1)]; }
 function clipDown(e, c, d) {
   e.stopPropagation(); e.preventDefault();
   const add = e.shiftKey || e.ctrlKey || e.metaKey;
   if (add || !selSet.has(c.id)) selectClip(c.id, true, add); else { sel = c.id; $$('.clip', lanesEl).forEach(x => x.classList.toggle('sel', x.dataset.id === sel)); renderProps(); render(); }
   if (add || locked(c)) { if (locked(c)) toast('المسار مقفل'); return; }
   const r = d.getBoundingClientRect(), ox = e.clientX - r.left;
-  const mode = ox < 9 ? 'l' : ox > r.width - 9 ? 'r' : 'm';
+  const touch = e.pointerType === 'touch', hw = touch ? 22 : 9;
+  const mode = ox < hw ? 'l' : ox > r.width - hw ? 'r' : 'm';
   const o = { start: c.start, dur: c.dur, srcIn: c.srcIn, x: e.clientX }; const m = S.media[c.mediaId];
   const grp = (mode === 'm' && selSet.size > 1) ? S.clips.filter(q => selSet.has(q.id) && !locked(q)).map(q => [q, q.start]) : null;
-  pushUndo();
+  let armed = !(touch && mode === 'm'), holdT = 0;
+  if (armed) pushUndo(); else holdT = setTimeout(() => { armed = true; pushUndo(); if (navigator.vibrate) navigator.vibrate(12); d.classList.add('lift'); }, 280);
   const mv = ev => {
+    if (!armed) { if (Math.abs(ev.clientX - o.x) > 8 || Math.abs(ev.clientY - e.clientY) > 8) { clearTimeout(holdT); up(); } return; }
     const dt = (ev.clientX - o.x) / pps;
     if (mode === 'm') {
       let ns = Math.max(0, snapT(o.start + dt, c, c.dur));
@@ -483,7 +492,7 @@ function clipDown(e, c, d) {
     }
     renderTimeline(); sync(time, false); render();
   };
-  const up = () => { removeEventListener('pointermove', mv); removeEventListener('pointerup', up); removeEventListener('pointercancel', up); renderProps(); };
+  const up = () => { clearTimeout(holdT); d.classList.remove('lift'); removeEventListener('pointermove', mv); removeEventListener('pointerup', up); removeEventListener('pointercancel', up); if (armed) renderProps(); };
   addEventListener('pointermove', mv); addEventListener('pointerup', up); addEventListener('pointercancel', up);
 }
 function selectClip(id, keepTl, add) {
@@ -492,13 +501,22 @@ function selectClip(id, keepTl, add) {
   if (!keepTl) renderTimeline(); else $$('.clip', lanesEl).forEach(x => { x.classList.toggle('sel', x.dataset.id === sel); x.classList.toggle('multi', selSet.has(x.dataset.id) && x.dataset.id !== sel); });
   renderProps(); render();
 }
-lanesEl.addEventListener('pointerdown', e => { if (e.target.closest('.clip') || e.target.closest('.lbl')) return; selectClip(null); const r = ruler.getBoundingClientRect(); seek((e.clientX - r.left - 64) / pps); });
-function rulerSeek(e) { const r = ruler.getBoundingClientRect(); pause(); seek((e.clientX - r.left - 64) / pps); }
+lanesEl.addEventListener('pointerdown', e => { if (e.target.closest('.clip') || e.target.closest('.lbl')) return; selectClip(null); if (MOB()) return; const r = ruler.getBoundingClientRect(); seek((e.clientX - r.left - TLOFF) / pps); });
+function rulerSeek(e) { const r = ruler.getBoundingClientRect(); pause(); seek((e.clientX - r.left - TLOFF) / pps); }
 ruler.addEventListener('pointerdown', e => { ruler.setPointerCapture(e.pointerId); rulerSeek(e); ruler.onpointermove = rulerSeek; });
 ruler.addEventListener('pointerup', () => ruler.onpointermove = null);
 $('#zoom').oninput = e => { const cx = tlScroll.scrollLeft + tlScroll.clientWidth / 2, tc = cx / pps; pps = +e.target.value; renderTimeline(); tlScroll.scrollLeft = tc * pps - tlScroll.clientWidth / 2; };
 tlScroll.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); const z = $('#zoom'); z.value = clamp(+z.value * (e.deltaY < 0 ? 1.15 : .87), 10, 300); z.oninput({ target: z }); }, { passive: false });
 addEventListener('resize', renderTimeline);
+tlScroll.addEventListener('scroll', () => {
+  if (!MOB() || Math.abs(tlScroll.scrollLeft - progX) < 2) return;
+  if (playing) pause(); time = clamp(tlScroll.scrollLeft / pps, 0, total()); sync(time, false); render();
+}, { passive: true });
+let pinch = null;
+const tdist = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+tlScroll.addEventListener('touchstart', e => { if (e.touches.length === 2) pinch = { d: tdist(e.touches), pps }; }, { passive: true });
+tlScroll.addEventListener('touchmove', e => { if (pinch && e.touches.length === 2) { pps = clamp(pinch.pps * tdist(e.touches) / pinch.d, 10, 300); $('#zoom').value = pps; renderTimeline(); } }, { passive: true });
+tlScroll.addEventListener('touchend', e => { if (e.touches.length < 2) pinch = null; });
 
 /* ---------------- أدوات التحرير ---------------- */
 function splitClip() {
