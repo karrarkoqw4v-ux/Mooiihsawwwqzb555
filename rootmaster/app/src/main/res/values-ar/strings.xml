@@ -52,10 +52,10 @@
     <string name="unavailable_note">القيم التي لا يتيحها النظام للتطبيقات تظهر كغير متاحة ولا يتم تخمينها.</string>
     <string name="post_reboot_title">أعيد تشغيل الجهاز. نتيجة إعادة التحقق:</string>
     <string name="dismiss">إغلاق</string>
-    <string name="rv_installed">Root Installed</string>
-    <string name="rv_not_detected">Root Not Detected</string>
-    <string name="rv_failed">Verification Failed</string>
-    <string name="rv_unsupported">Device Not Supported</string>
+    <string name="rv_installed">تم تفعيل Root</string>
+    <string name="rv_not_detected">لم يُكتشف Root</string>
+    <string name="rv_failed">فشل التحقق</string>
+    <string name="rv_unsupported">الجهاز غير مدعوم</string>
     <string name="verdict_rooted">Root مفعّل بالفعل</string>
     <string name="verdict_ready">جاهز: Bootloader مفتوح</string>
     <string name="verdict_unlock">ممكن، لكن يجب فتح Bootloader أولاً</string>
