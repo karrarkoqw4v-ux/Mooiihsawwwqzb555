@@ -15,7 +15,9 @@ for n in ET.parse('ui.xml').iter('node'):
     if t: print('  UI:', t)
 "; }
 
-python3 scripts/fake_roku.py &
+python3 scripts/fake_roku.py >/dev/null 2>&1 </dev/null &
+SRV=$!
+trap 'kill $SRV 2>/dev/null' EXIT
 sleep 1
 adb shell wm size 1268x2756; adb shell wm density 440
 adb install -r TV-Raymond.apk || FAIL=1
@@ -45,4 +47,5 @@ grep -q "device-info" roku.log || { echo "FAIL: TV never discovered"; FAIL=1; }
 echo "pid end: $(adb shell pidof com.raymond.tv || echo DEAD)"; adb shell pidof com.raymond.tv >/dev/null || FAIL=1
 echo "=== LOGCAT ==="; adb logcat -d | grep -E "AndroidRuntime|FATAL|ReactNativeJS|SIGABRT" | head -60
 echo "RESULT FAIL=$FAIL"
+kill $SRV 2>/dev/null
 exit $FAIL
