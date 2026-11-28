@@ -11,6 +11,7 @@ import { colors } from './src/theme';
 import { tv } from './src/tv/manager';
 import { useStore } from './src/store';
 import Intro from './src/screens/Intro';
+import ShareScreen from './src/screens/ShareScreen';
 import AddAppScreen from './src/screens/AddAppScreen';
 import { useFonts, Cairo_600SemiBold, Cairo_700Bold, Cairo_800ExtraBold } from '@expo-google-fonts/cairo';
 
@@ -40,6 +41,7 @@ function Router() {
     case 'tvPicker': return <TvPickerSheet />;
     case 'keyboard': return <KeyboardSheet />;
     case 'addApp': return <AddAppScreen />;
+    case 'pcShare': return <ShareScreen />;
     default: return <RemoteScreen />;
   }
 }

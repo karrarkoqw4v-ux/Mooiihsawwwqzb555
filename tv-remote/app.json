@@ -13,12 +13,15 @@
         "backgroundColor": "#D97757"
       },
       "permissions": [
-        "VIBRATE",
-        "INTERNET",
-        "ACCESS_WIFI_STATE",
         "ACCESS_NETWORK_STATE",
+        "ACCESS_WIFI_STATE",
+        "BLUETOOTH",
+        "BLUETOOTH_ADMIN",
+        "BLUETOOTH_CONNECT",
         "CHANGE_WIFI_MULTICAST_STATE",
-        "RECORD_AUDIO"
+        "INTERNET",
+        "RECORD_AUDIO",
+        "VIBRATE"
       ]
     },
     "ios": {

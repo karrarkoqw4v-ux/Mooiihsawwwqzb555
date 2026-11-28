@@ -43,6 +43,7 @@ interface State {
   devices: TvDevice[];
   activeId: string | null;
   conn: 'idle' | 'connecting' | 'connected' | 'error';
+  pc: { name: string; address: string } | null;   // الكمبيوتر المختار لمشاركة الملفات
   updateDevice: (id: string, p: Partial<TvDevice>) => void;
   apps: TvApp[];
   controlMode: 'touch' | 'dpad';
@@ -63,6 +64,7 @@ export const useStore = create<State>()(persist((set) => ({
   devices: [],
   activeId: null,
   conn: 'idle',
+  pc: null,
   updateDevice: (id, p) => set((s) => ({ devices: s.devices.map((d) => (d.id === id ? { ...d, ...p } : d)) })),
   apps: DEFAULT_APPS,
   controlMode: 'touch',
@@ -91,5 +93,5 @@ export const useStore = create<State>()(persist((set) => ({
   migrate: (st: any) => ({ ...st, controlMode: 'touch' }),   // الافتراضي الجديد: لوحة لمس مثل Apple TV
   storage: createJSONStorage(() => AsyncStorage),
   // نحفظ الأجهزة والإعدادات فقط (التطبيقات تحتوي صور require فلا تُحفظ)
-  partialize: (s) => ({ devices: s.devices, activeId: s.activeId, controlMode: s.controlMode, haptics: s.haptics, holdRepeat: s.holdRepeat, keepAwake: s.keepAwake, theater: s.theater }),
+  partialize: (s) => ({ pc: s.pc, devices: s.devices, activeId: s.activeId, controlMode: s.controlMode, haptics: s.haptics, holdRepeat: s.holdRepeat, keepAwake: s.keepAwake, theater: s.theater }),
 }));

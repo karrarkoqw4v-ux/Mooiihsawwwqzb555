@@ -18,6 +18,7 @@ export function SettingsScreen() {
       <Row title="السلوك عن بعد" onPress={() => nav.push('behavior')} />
       <Row title="إدارة التطبيقات" onPress={() => nav.push('manageApps')} />
       <Row title="الأجهزة المتصلة" onPress={() => nav.push('devices')} />
+      <Row title="مشاركة الكمبيوتر" icon="laptop-outline" onPress={() => nav.push('pcShare')} />
       <Divider />
       <SectionTitle>طلب</SectionTitle>
       <Row title="الأسئلة الشائعة" />

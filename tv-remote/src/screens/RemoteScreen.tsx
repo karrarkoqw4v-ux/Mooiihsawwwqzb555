@@ -67,7 +67,7 @@ export default function RemoteScreen({ startPage = 1 }: { startPage?: number }) 
           <Text numberOfLines={1} style={{ color: colors.text, fontSize: 20, fontWeight: '800', flexShrink: 1 }}>{device?.name ?? 'اتصال بالتلفاز'}</Text>
           <Ionicons name="caret-down" size={12} color="#ddd" />
         </Pressable>
-        <Pressable onPress={() => nav.push('settings')} style={{ position: 'absolute', right: 20, padding: 6 }}>
+        <Pressable accessibilityLabel="الإعدادات" onPress={() => nav.push('settings')} style={{ position: 'absolute', right: 20, padding: 6 }}>
           <Ionicons name="settings-sharp" size={26} color="#cfcfd6" />
         </Pressable>
       </View>

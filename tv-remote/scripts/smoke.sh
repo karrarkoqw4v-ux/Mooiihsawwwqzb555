@@ -60,6 +60,15 @@ else
   echo "FAIL: touchpad OK label not found"; FAIL=1
 fi
 snap 4_after_keys
+# ===== شاشة مشاركة الكمبيوتر: نفتحها من الإعدادات ونتأكد أنها تظهر ولا تكرش =====
+dump; python3 scripts/tap_text.py "الإعدادات" > g.txt && adb shell input tap $(cat g.txt) || echo "WARN: settings gear not found"
+sleep 2; dump
+python3 scripts/tap_text.py "مشاركة الكمبيوتر" > r.txt && adb shell input tap $(cat r.txt) || { echo "FAIL: pc-share row not found in settings"; FAIL=1; }
+sleep 3; dump
+python3 scripts/tap_text.py "Allow" > al.txt && adb shell input tap $(cat al.txt) && sleep 2 && dump   # نافذة صلاحية البلوتوث إن ظهرت
+echo "--- pc-share screen ---"; texts
+snap 5_pc_share
+if ! texts | grep -qE "اختر الكمبيوتر|البلوتوث|أندرويد|اقتران"; then echo "FAIL: pc-share screen content missing"; FAIL=1; fi
 echo "=== FAKE ROKU LOG ==="; cat roku.log | sort | uniq -c | head -20
 for k in Up Down Left Right Select; do grep -q "keypress/$k" roku.log || { echo "FAIL: $k did not reach TV"; FAIL=1; }; done
 grep -q "POST /keypress" roku.log || { echo "FAIL: no key reached the TV"; FAIL=1; }
