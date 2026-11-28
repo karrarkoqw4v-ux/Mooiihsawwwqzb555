@@ -5,7 +5,7 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
-    "backgroundColor": "#D97757",
+    "backgroundColor": "#151517",
     "android": {
       "package": "com.raymond.tv",
       "adaptiveIcon": {
@@ -35,7 +35,7 @@
         {
           "image": "./assets/splash-icon.png",
           "imageWidth": 200,
-          "backgroundColor": "#D97757",
+          "backgroundColor": "#151517",
           "resizeMode": "contain"
         }
       ]

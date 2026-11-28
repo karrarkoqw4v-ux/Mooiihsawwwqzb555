@@ -56,7 +56,7 @@ export default function Intro({ onDone }: { onDone: () => void }) {
   const ringStyle = (delay: number) => {
     const p = Animated.modulo(Animated.add(ring, delay), 1);
     return {
-      position: 'absolute' as const, width: 180, height: 180, borderRadius: 90, borderWidth: 2, borderColor: 'rgba(250,243,232,0.7)',
+      position: 'absolute' as const, width: 180, height: 180, borderRadius: 90, borderWidth: 2, borderColor: 'rgba(217,119,87,0.75)',
       opacity: Animated.multiply(burst, p.interpolate({ inputRange: [0, 1], outputRange: [0.7, 0] })),
       transform: [{ scale: p.interpolate({ inputRange: [0, 1], outputRange: [0.8, 2.3] }) }],
     };
@@ -64,7 +64,7 @@ export default function Intro({ onDone }: { onDone: () => void }) {
 
   return (
     <Animated.View style={{ position: 'absolute', inset: 0, opacity: out }}>
-      <LinearGradient colors={['#E88662', '#D97757', '#B4553A']} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <LinearGradient colors={['#262628', '#171719', '#0c0c0d']} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         <View style={{ width: 200, height: 200, alignItems: 'center', justifyContent: 'center' }}>
           <Animated.View style={ringStyle(0)} />
           <Animated.View style={ringStyle(0.5)} />
@@ -76,7 +76,7 @@ export default function Intro({ onDone }: { onDone: () => void }) {
           <Text style={{ color: CREAM, fontSize: 44, fontWeight: '800', letterSpacing: 1 }}>TV Raymond</Text>
         </Animated.View>
         <Animated.View style={{ opacity: sub, marginTop: 6 }}>
-          <Text style={{ color: 'rgba(250,243,232,0.85)', fontSize: 17, fontWeight: '600' }}>ريموت تلفزيونك بين إيدك</Text>
+          <Text style={{ color: 'rgba(250,243,232,0.7)', fontSize: 17, fontWeight: '600' }}>ريموت تلفزيونك بين إيدك</Text>
         </Animated.View>
       </LinearGradient>
     </Animated.View>
