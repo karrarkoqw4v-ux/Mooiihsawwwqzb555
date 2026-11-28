@@ -4,10 +4,10 @@ import { Text } from './Text';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../theme';
 import { useStore } from '../store';
-import { mockDriver } from '../tv/mock';
+import { tv } from '../tv/manager';
 import { Key } from '../tv/driver';
 
-export const driver = mockDriver;
+export const driver = tv;
 
 export function useSendKey() {
   const haptics = useStore((s) => s.haptics);

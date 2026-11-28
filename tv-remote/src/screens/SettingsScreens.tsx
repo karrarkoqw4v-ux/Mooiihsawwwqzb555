@@ -5,7 +5,7 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { colors } from '../theme';
 import { useStore } from '../store';
 import { useNav } from '../nav';
-import { Divider } from '../components/common';
+import { Divider, driver } from '../components/common';
 import { AppLogo } from '../components/AppsRow';
 import { Row, Screen, SectionTitle, ToggleRow } from './ui';
 
@@ -120,7 +120,7 @@ export function ConnectedDevicesScreen() {
   const [name, setName] = useState(device?.name ?? '');
   return (
     <Screen title="الأجهزة المتصلة" scroll={false}>
-      <Text style={{ color: colors.sub, fontSize: 18, textAlign: 'center', marginTop: 24, letterSpacing: 2 }}>AI PONT</Text>
+      <Text style={{ color: colors.sub, fontSize: 16, textAlign: 'center', marginTop: 24 }}>{device ? `${device.brand.toUpperCase()} · ${device.host}` : 'لا يوجد جهاز متصل'}</Text>
       <Text style={{ color: colors.text, fontSize: 22, textAlign: 'center', marginTop: 26 }}>لقب الجهاز</Text>
       <TextInput
         value={name} onChangeText={setName}
@@ -134,7 +134,7 @@ export function ConnectedDevicesScreen() {
           <Text style={{ color: '#fff', fontSize: 18 }}>تحديث</Text>
         </Pressable>
         <Pressable
-          onPress={() => { if (device) remove(device.id); nav.pop(); }}
+          onPress={() => { if (device) { remove(device.id); driver.disconnect(); } nav.pop(); }}
           style={{ flex: 1, height: 50, borderRadius: 14, backgroundColor: colors.red, alignItems: 'center', justifyContent: 'center' }}
         >
           <Text style={{ color: '#fff', fontSize: 18 }}>حذف</Text>

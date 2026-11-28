@@ -32,6 +32,7 @@ export default function RemoteScreen({ startPage = 1 }: { startPage?: number }) 
   const nav = useNav();
   const send = useSendKey();
   const device = useStore((s) => s.devices.find((d) => d.id === s.activeId));
+  const conn = useStore((s) => s.conn);
   const [w, setW] = useState(0);
   const [page, setPage] = useState(startPage);
   const sv = useRef<ScrollView>(null);
@@ -57,8 +58,8 @@ export default function RemoteScreen({ startPage = 1 }: { startPage?: number }) 
         <Pressable onPress={() => send('power')}><Ionicons name="power" size={26} color={colors.red} /></Pressable>
         <Pressable onPress={() => nav.push('tvPicker')} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
           <Ionicons name="caret-down" size={12} color="#ddd" />
-          <Text style={{ color: colors.text, fontSize: 22, fontWeight: '800' }}>{device?.name ?? 'لا يوجد جهاز'}</Text>
-          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.red, marginTop: -8 }} />
+          <Text style={{ color: colors.text, fontSize: 22, fontWeight: '800' }}>{device?.name ?? 'اتصال بالتلفاز'}</Text>
+          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: conn === 'connected' ? colors.green : conn === 'connecting' ? '#f5a623' : colors.red, marginTop: -8 }} />
         </Pressable>
         <Pressable onPress={() => nav.push('settings')}><Ionicons name="settings-sharp" size={26} color="#cfcfd6" /></Pressable>
       </View>

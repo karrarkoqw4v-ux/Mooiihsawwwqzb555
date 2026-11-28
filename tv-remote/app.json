@@ -23,7 +23,14 @@
     },
     "ios": {
       "bundleIdentifier": "com.raymond.tv",
-      "supportsTablet": false
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSLocalNetworkUsageDescription": "للبحث عن التلفزيون في شبكتك والتحكم به",
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true,
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
     "web": {
       "bundler": "metro",
@@ -37,6 +44,15 @@
           "imageWidth": 200,
           "backgroundColor": "#151517",
           "resizeMode": "contain"
+        }
+      ],
+      "expo-build-properties",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
         }
       ]
     ],

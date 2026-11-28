@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TvDevice } from './tv/driver';
 
 export interface TvApp {
@@ -40,6 +42,8 @@ export const DEFAULT_APPS: TvApp[] = [
 interface State {
   devices: TvDevice[];
   activeId: string | null;
+  conn: 'idle' | 'connecting' | 'connected' | 'error';
+  updateDevice: (id: string, p: Partial<TvDevice>) => void;
   apps: TvApp[];
   controlMode: 'touch' | 'dpad';
   haptics: boolean;
@@ -55,9 +59,11 @@ interface State {
   moveApp: (from: number, to: number) => void;
 }
 
-export const useStore = create<State>((set) => ({
-  devices: [{ id: 'mock-1', name: 'hh', host: '192.168.1.20', brand: 'mock' }],
-  activeId: 'mock-1',
+export const useStore = create<State>()(persist((set) => ({
+  devices: [],
+  activeId: null,
+  conn: 'idle',
+  updateDevice: (id, p) => set((s) => ({ devices: s.devices.map((d) => (d.id === id ? { ...d, ...p } : d)) })),
   apps: DEFAULT_APPS,
   controlMode: 'dpad',
   haptics: true,
@@ -66,7 +72,7 @@ export const useStore = create<State>((set) => ({
   theater: false,
   set: (p) => set(p),
   addDevice: (d) =>
-    set((s) => (s.devices.some((x) => x.id === d.id) ? s : { devices: [...s.devices, d], activeId: d.id })),
+    set((s) => (s.devices.some((x) => x.id === d.id) ? s : { devices: [...s.devices, d] })),
   renameDevice: (id, name) => set((s) => ({ devices: s.devices.map((d) => (d.id === id ? { ...d, name } : d)) })),
   removeDevice: (id) =>
     set((s) => ({ devices: s.devices.filter((d) => d.id !== id), activeId: s.activeId === id ? null : s.activeId })),
@@ -79,4 +85,9 @@ export const useStore = create<State>((set) => ({
       a.splice(to, 0, x);
       return { apps: a };
     }),
+}), {
+  name: 'tv-raymond',
+  storage: createJSONStorage(() => AsyncStorage),
+  // نحفظ الأجهزة والإعدادات فقط (التطبيقات تحتوي صور require فلا تُحفظ)
+  partialize: (s) => ({ devices: s.devices, activeId: s.activeId, controlMode: s.controlMode, haptics: s.haptics, holdRepeat: s.holdRepeat, keepAwake: s.keepAwake, theater: s.theater }),
 }));

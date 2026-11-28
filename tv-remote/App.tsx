@@ -8,6 +8,8 @@ import {
 } from './src/screens/SettingsScreens';
 import { KeyboardSheet, TvPickerSheet } from './src/screens/Sheets';
 import { colors } from './src/theme';
+import { tv } from './src/tv/manager';
+import { useStore } from './src/store';
 import Intro from './src/screens/Intro';
 import AddAppScreen from './src/screens/AddAppScreen';
 import { useFonts, Cairo_600SemiBold, Cairo_700Bold, Cairo_800ExtraBold } from '@expo-google-fonts/cairo';
@@ -38,6 +40,15 @@ function initialRoute(): Route {
 export default function App() {
   const [intro, setIntro] = React.useState(!new URLSearchParams((globalThis as any).location?.search ?? '').get('route'));
   const [loaded] = useFonts({ Cairo_600SemiBold, Cairo_700Bold, Cairo_800ExtraBold });
+  React.useEffect(() => {
+    // يتصل تلقائياً بآخر تلفزيون محفوظ
+    const t = setTimeout(() => {
+      const { devices, activeId } = useStore.getState();
+      const d = devices.find((x) => x.id === activeId);
+      if (d) tv.connect(d);
+    }, 300);
+    return () => clearTimeout(t);
+  }, []);
   if (!loaded) return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
