@@ -6,6 +6,7 @@ import { colors } from '../theme';
 import { useNav } from '../nav';
 import { useStore } from '../store';
 import { driver } from '../components/common';
+import { TOP } from './ui';
 import { scanNetwork } from '../tv/scan';
 import { TvDevice } from '../tv/driver';
 
@@ -14,7 +15,7 @@ function Sheet({ title, children }: { title?: string; children: React.ReactNode 
   const nav = useNav();
   return (
     <View style={{ flex: 1, backgroundColor: '#0d0d0fee' }}>
-      <Pressable onPress={nav.pop} style={{ paddingTop: 64, paddingHorizontal: 20 }}>
+      <Pressable onPress={nav.pop} style={{ paddingTop: TOP + 16, paddingHorizontal: 20 }}>
         <Ionicons name="close" size={30} color="#ddd" />
       </Pressable>
       {title && <Text style={{ color: colors.text, fontSize: 24, paddingHorizontal: 22, marginTop: 22 }}>{title}</Text>}

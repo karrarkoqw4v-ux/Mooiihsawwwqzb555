@@ -67,7 +67,7 @@ function Main() {
     return () => clearTimeout(t);
   }, []);
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+    <View style={{ flex: 1, backgroundColor: colors.bg, direction: 'ltr' }}>
       <StatusBar style="light" />
       <NavProvider initial={initialRoute()}>
         <Router />

@@ -11,5 +11,5 @@ export function fontFor(weight?: string | number) {
 
 export function Text({ style, ...rest }: TextProps) {
   const f = StyleSheet.flatten(style) || {};
-  return <RNText {...rest} style={[style, { fontFamily: fontFor(f.fontWeight as any), fontWeight: undefined }]} />;
+  return <RNText {...rest} style={[style, { fontFamily: fontFor(f.fontWeight as any), fontWeight: undefined, lineHeight: f.lineHeight ?? Math.round(((f.fontSize as number) ?? 14) * 1.6) }]} />;
 }

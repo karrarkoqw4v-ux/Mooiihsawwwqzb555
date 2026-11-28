@@ -46,7 +46,6 @@
           "resizeMode": "contain"
         }
       ],
-      "expo-build-properties",
       [
         "expo-build-properties",
         {

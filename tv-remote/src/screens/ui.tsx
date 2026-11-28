@@ -1,5 +1,7 @@
 import React from 'react';
-import { Pressable, ScrollView, Switch, View } from 'react-native';
+import { Platform, Pressable, ScrollView, StatusBar, Switch, View } from 'react-native';
+
+export const TOP = Platform.OS === 'android' ? (StatusBar.currentHeight ?? 28) : 50;
 import { Text } from '../components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme';
@@ -11,13 +13,13 @@ export function Screen({ title, children, scroll = true }: { title: string; chil
   const Body: any = scroll ? ScrollView : View;
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <View style={{ height: 70, justifyContent: 'flex-end', paddingHorizontal: 20, paddingBottom: 10 }}>
+      <View style={{ paddingTop: TOP + 12, paddingHorizontal: 20, paddingBottom: 12 }}>
         <Pressable onPress={nav.pop} style={{ flexDirection: 'row-reverse', alignItems: 'center', gap: 10 }}>
           <Ionicons name="arrow-forward" size={22} color={colors.text} />
           <Text style={{ color: colors.text, fontSize: 24, fontWeight: '800' }}>{title}</Text>
         </Pressable>
       </View>
-      <Body style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 30 }}>{children}</Body>
+      <Body style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 40 }}>{children}</Body>
     </View>
   );
 }

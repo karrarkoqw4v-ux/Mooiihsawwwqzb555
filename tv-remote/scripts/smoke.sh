@@ -4,7 +4,7 @@ set +e
 FAIL=0
 snap() {  # لقطة مصغرة تُطبع في السجل بصيغة base64 لأقرأها
   echo "=== SNAP $1 ==="
-  adb exec-out screencap -p | convert png:- -resize 260x -quality 55 jpg:- | base64 -w0; echo
+  adb exec-out screencap -p | convert png:- -resize 200x -quality 50 jpg:- | base64 -w0; echo
   echo "=== END SNAP ==="
 }
 dump() {
@@ -30,6 +30,7 @@ trap 'kill $SRV 2>/dev/null' EXIT
 sleep 1
 adb shell wm size 1268x2756; adb shell wm density 440
 adb install -r TV-Raymond.apk || FAIL=1
+adb shell cmd locale set-app-locales com.raymond.tv --locales ar-IQ || echo 'locale set failed'
 adb logcat -c
 adb shell monkey -p com.raymond.tv -c android.intent.category.LAUNCHER 1
 sleep 9
@@ -50,7 +51,11 @@ W=1268; H=2756
 for y in 1000 1100 1200 1300 1400 1500 1600 1700; do adb shell input tap $((W/2)) $y; sleep 0.4; done
 sleep 2
 snap 4_after_keys
+# سحب على لوحة اللمس (مثل Apple TV): لأعلى ولأسفل ويميناً
+for d in "634 1500 634 1150" "634 1150 634 1500" "420 1330 860 1330"; do adb shell input swipe $d 250; sleep 0.8; done
+sleep 1
 echo "=== FAKE ROKU LOG ==="; cat roku.log | sort | uniq -c | head -20
+grep -q "keypress/Up" roku.log || echo "WARN: swipe up did not reach TV"
 grep -q "POST /keypress" roku.log || { echo "FAIL: no key reached the TV"; FAIL=1; }
 grep -q "device-info" roku.log || { echo "FAIL: TV never discovered"; FAIL=1; }
 echo "pid end: $(adb shell pidof com.raymond.tv || echo DEAD)"; adb shell pidof com.raymond.tv >/dev/null || FAIL=1

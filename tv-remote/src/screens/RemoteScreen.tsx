@@ -10,6 +10,8 @@ import DPad from '../components/DPad';
 import NumPad from '../components/NumPad';
 import BottomPanel from '../components/BottomPanel';
 import { useSendKey } from '../components/common';
+import TouchPad from '../components/TouchPad';
+import { TOP } from './ui';
 
 export function AdBanner() {
   return (
@@ -33,6 +35,7 @@ export default function RemoteScreen({ startPage = 1 }: { startPage?: number }) 
   const send = useSendKey();
   const device = useStore((s) => s.devices.find((d) => d.id === s.activeId));
   const conn = useStore((s) => s.conn);
+  const mode = useStore((s) => s.controlMode);
   const [w, setW] = useState(0);
   const [page, setPage] = useState(startPage);
   const sv = useRef<ScrollView>(null);
@@ -53,15 +56,19 @@ export default function RemoteScreen({ startPage = 1 }: { startPage?: number }) 
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      {/* الشريط العلوي: تشغيل / اسم الجهاز / إعدادات */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, height: 60, marginTop: 44 }}>
-        <Pressable onPress={() => send('power')}><Ionicons name="power" size={26} color={colors.red} /></Pressable>
-        <Pressable onPress={() => nav.push('tvPicker')} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <Ionicons name="caret-down" size={12} color="#ddd" />
-          <Text style={{ color: colors.text, fontSize: 22, fontWeight: '800' }}>{device?.name ?? 'اتصال بالتلفاز'}</Text>
-          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: conn === 'connected' ? colors.green : conn === 'connecting' ? '#f5a623' : colors.red, marginTop: -8 }} />
+      {/* الشريط العلوي: تشغيل | اسم الجهاز | إعدادات (الاسم في المنتصف بدون قص) */}
+      <View style={{ height: 56, marginTop: TOP + 6, justifyContent: 'center' }}>
+        <Pressable onPress={() => send('power')} style={{ position: 'absolute', left: 20, padding: 6 }}>
+          <Ionicons name="power" size={26} color={colors.red} />
         </Pressable>
-        <Pressable onPress={() => nav.push('settings')}><Ionicons name="settings-sharp" size={26} color="#cfcfd6" /></Pressable>
+        <Pressable onPress={() => nav.push('tvPicker')} style={{ alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 6, maxWidth: '58%' }}>
+          <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: conn === 'connected' ? colors.green : conn === 'connecting' ? '#f5a623' : colors.red }} />
+          <Text numberOfLines={1} style={{ color: colors.text, fontSize: 20, fontWeight: '800', flexShrink: 1 }}>{device?.name ?? 'اتصال بالتلفاز'}</Text>
+          <Ionicons name="caret-down" size={12} color="#ddd" />
+        </Pressable>
+        <Pressable onPress={() => nav.push('settings')} style={{ position: 'absolute', right: 20, padding: 6 }}>
+          <Ionicons name="settings-sharp" size={26} color="#cfcfd6" />
+        </Pressable>
       </View>
 
       <View style={{ height: 124, marginTop: 4 }}><AppsRow /></View>
@@ -74,7 +81,7 @@ export default function RemoteScreen({ startPage = 1 }: { startPage?: number }) 
           style={{ flexGrow: 0 }} onContentSizeChange={onSize}
         >
           <View style={{ width: w, alignItems: 'center' }}><NumPad width={Math.max(150, Math.min(290, w * 0.74))} /></View>
-          <View style={{ width: w, alignItems: 'center' }}><DPad size={Math.max(120, Math.min(250, w * 0.62))} /></View>
+          <View style={{ width: w, alignItems: 'center' }}>{mode === 'touch' ? <TouchPad size={Math.max(150, Math.min(290, w * 0.7))} /> : <DPad size={Math.max(120, Math.min(250, w * 0.62))} />}</View>
         </ScrollView>}
         <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 14 }}>
           {[0, 1].map((i) => (
@@ -83,7 +90,7 @@ export default function RemoteScreen({ startPage = 1 }: { startPage?: number }) 
         </View>
       </View>
 
-      <View style={{ paddingBottom: 22 }}><BottomPanel onToggleNumpad={toggle} /></View>
+      <View style={{ paddingBottom: 28 }}><BottomPanel onToggleNumpad={toggle} /></View>
     </View>
   );
 }

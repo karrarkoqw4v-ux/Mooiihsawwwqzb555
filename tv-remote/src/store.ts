@@ -65,7 +65,7 @@ export const useStore = create<State>()(persist((set) => ({
   conn: 'idle',
   updateDevice: (id, p) => set((s) => ({ devices: s.devices.map((d) => (d.id === id ? { ...d, ...p } : d)) })),
   apps: DEFAULT_APPS,
-  controlMode: 'dpad',
+  controlMode: 'touch',
   haptics: true,
   holdRepeat: true,
   keepAwake: true,
@@ -87,6 +87,8 @@ export const useStore = create<State>()(persist((set) => ({
     }),
 }), {
   name: 'tv-raymond',
+  version: 2,
+  migrate: (st: any) => ({ ...st, controlMode: 'touch' }),   // الافتراضي الجديد: لوحة لمس مثل Apple TV
   storage: createJSONStorage(() => AsyncStorage),
   // نحفظ الأجهزة والإعدادات فقط (التطبيقات تحتوي صور require فلا تُحفظ)
   partialize: (s) => ({ devices: s.devices, activeId: s.activeId, controlMode: s.controlMode, haptics: s.haptics, holdRepeat: s.holdRepeat, keepAwake: s.keepAwake, theater: s.theater }),

@@ -33,9 +33,9 @@ export default function AppsRow() {
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 12, gap: 12 }}>
       {apps.map((a) => (
-        <Pressable key={a.id} onPress={() => driver.launchApp(a.id)} style={{ alignItems: 'center', width: 78 }}>
+        <Pressable key={a.id} onPress={() => driver.launchApp(a.id)} style={{ alignItems: 'center', width: 86 }}>
           <AppLogo app={a} />
-          <Text numberOfLines={2} style={{ color: '#fff', fontSize: 14, fontWeight: '700', textAlign: 'center', marginTop: 6, lineHeight: 19 }}>
+          <Text numberOfLines={2} style={{ color: '#fff', fontSize: 13, fontWeight: '700', textAlign: 'center', marginTop: 4, lineHeight: 18 }}>
             {a.name}
           </Text>
         </Pressable>
