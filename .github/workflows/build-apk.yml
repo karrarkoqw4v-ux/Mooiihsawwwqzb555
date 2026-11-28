@@ -1,8 +1,8 @@
 name: Build Android APK
 on:
   workflow_dispatch:
-  push:
-    paths: ['tv-remote/**', '.github/workflows/build-apk.yml']
+permissions:
+  contents: write
 jobs:
   apk:
     runs-on: ubuntu-latest
@@ -17,7 +17,12 @@ jobs:
       - run: npx expo prebuild --platform android --no-install
       - run: ./gradlew assembleRelease --no-daemon
         working-directory: tv-remote/android
+      - name: Rename APK
+        run: cp android/app/build/outputs/apk/release/app-release.apk TV-Raymond.apk
       - uses: actions/upload-artifact@v4
-        with:
-          name: tv-remote-apk
-          path: tv-remote/android/app/build/outputs/apk/release/*.apk
+        with: { name: TV-Raymond-apk, path: tv-remote/TV-Raymond.apk }
+      - name: Publish release
+        env: { GH_TOKEN: "${{ github.token }}" }
+        run: |
+          gh release delete apk-latest --yes --cleanup-tag || true
+          gh release create apk-latest TV-Raymond.apk --title "TV Raymond APK" --notes "Latest build" --target "${{ github.sha }}"

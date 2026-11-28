@@ -1,15 +1,16 @@
 {
   "expo": {
-    "name": "ريموت التلفزيون",
-    "slug": "tv-remote",
+    "name": "TV Raymond",
+    "slug": "tv-raymond",
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
-    "backgroundColor": "#151517",
+    "backgroundColor": "#D97757",
     "android": {
-      "package": "com.tvremote.app",
+      "package": "com.raymond.tv",
       "adaptiveIcon": {
-        "backgroundColor": "#151517"
+        "foregroundImage": "./assets/adaptive-foreground.png",
+        "backgroundColor": "#D97757"
       },
       "permissions": [
         "VIBRATE",
@@ -21,15 +22,24 @@
       ]
     },
     "ios": {
-      "bundleIdentifier": "com.tvremote.app",
+      "bundleIdentifier": "com.raymond.tv",
       "supportsTablet": false
     },
     "web": {
-      "bundler": "metro"
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-font",
-      "expo-asset"
-    ]
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "backgroundColor": "#D97757",
+          "resizeMode": "contain"
+        }
+      ]
+    ],
+    "icon": "./assets/icon.png"
   }
 }
