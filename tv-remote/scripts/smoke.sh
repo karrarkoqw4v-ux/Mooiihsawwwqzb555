@@ -45,17 +45,23 @@ if [ -s pos.txt ]; then
   sleep 14; snap 3_after_search
   dump; echo "--- screen after search ---"; texts
 fi
-# بعد الاتصال نضغط على نقاط على خط الشاشة الوسطي ليصيب أزرار الأسهم/OK
+# بعد الاتصال: نجد مركز لوحة اللمس (كلمة OK بداخلها) ونجرّب لمسة وسحبات بالاتجاهات الأربعة
 sleep 3
-W=1268; H=2756
-for y in 1000 1100 1200 1300 1400 1500 1600 1700; do adb shell input tap $((W/2)) $y; sleep 0.4; done
-sleep 2
+dump
+adb shell wm size; adb shell wm density
+if python3 scripts/tap_text.py "OK" > ok.txt; then
+  read CX CY < ok.txt; echo "touchpad centre: $CX $CY"
+  adb shell input tap $CX $CY; sleep 0.8
+  adb shell input swipe $CX $((CY+130)) $CX $((CY-130)) 300; sleep 0.8
+  adb shell input swipe $CX $((CY-130)) $CX $((CY+130)) 300; sleep 0.8
+  adb shell input swipe $((CX-130)) $CY $((CX+130)) $CY 300; sleep 0.8
+  adb shell input swipe $((CX+130)) $CY $((CX-130)) $CY 300; sleep 1
+else
+  echo "FAIL: touchpad OK label not found"; FAIL=1
+fi
 snap 4_after_keys
-# سحب على لوحة اللمس (مثل Apple TV): لأعلى ولأسفل ويميناً
-for d in "634 1500 634 1150" "634 1150 634 1500" "420 1330 860 1330"; do adb shell input swipe $d 250; sleep 0.8; done
-sleep 1
 echo "=== FAKE ROKU LOG ==="; cat roku.log | sort | uniq -c | head -20
-grep -q "keypress/Up" roku.log || echo "WARN: swipe up did not reach TV"
+for k in Up Down Left Right Select; do grep -q "keypress/$k" roku.log || { echo "FAIL: $k did not reach TV"; FAIL=1; }; done
 grep -q "POST /keypress" roku.log || { echo "FAIL: no key reached the TV"; FAIL=1; }
 grep -q "device-info" roku.log || { echo "FAIL: TV never discovered"; FAIL=1; }
 echo "pid end: $(adb shell pidof com.raymond.tv || echo DEAD)"; adb shell pidof com.raymond.tv >/dev/null || FAIL=1

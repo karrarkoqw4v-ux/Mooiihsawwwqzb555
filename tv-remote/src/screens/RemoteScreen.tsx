@@ -37,12 +37,13 @@ export default function RemoteScreen({ startPage = 1 }: { startPage?: number }) 
   const conn = useStore((s) => s.conn);
   const mode = useStore((s) => s.controlMode);
   const [w, setW] = useState(0);
+  const [h, setH] = useState(0);
   const [page, setPage] = useState(startPage);
   const sv = useRef<ScrollView>(null);
 
   const onLayout = (e: LayoutChangeEvent) => {
     const nw = e.nativeEvent.layout.width;
-    setW(nw);
+    setW(nw); setH(e.nativeEvent.layout.height);
   };
   const inited = useRef(false);
   const onSize = () => {
@@ -81,7 +82,7 @@ export default function RemoteScreen({ startPage = 1 }: { startPage?: number }) 
           style={{ flexGrow: 0 }} onContentSizeChange={onSize}
         >
           <View style={{ width: w, alignItems: 'center' }}><NumPad width={Math.max(150, Math.min(290, w * 0.74))} /></View>
-          <View style={{ width: w, alignItems: 'center' }}>{mode === 'touch' ? <TouchPad size={Math.max(150, Math.min(290, w * 0.7))} /> : <DPad size={Math.max(120, Math.min(250, w * 0.62))} />}</View>
+          <View style={{ width: w, alignItems: 'center' }}>{mode === 'touch' ? <TouchPad size={Math.max(140, Math.min(290, w * 0.7, h - 56))} /> : <DPad size={Math.max(120, Math.min(250, w * 0.62, h - 56))} />}</View>
         </ScrollView>}
         <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 14 }}>
           {[0, 1].map((i) => (

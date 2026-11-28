@@ -19,6 +19,9 @@ export default function TouchPad({ size = 270 }: { size?: number }) {
   const pan = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponderCapture: () => true,   // لوحة اللمس تأخذ اللمسة قبل أي ScrollView
+      onMoveShouldSetPanResponderCapture: () => true,
+      onPanResponderTerminationRequest: () => false,      // لا أحد يسحب اللمسة منها (السحب الأفقي يتحول لـ Left/Right وليس تمرير الصفحة)
       onPanResponderGrant: () => { st.current = { x: 0, y: 0, moved: false }; },
       onPanResponderMove: (_, g) => {
         const s = st.current;
