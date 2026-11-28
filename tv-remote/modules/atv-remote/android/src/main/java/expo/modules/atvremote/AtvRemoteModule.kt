@@ -45,25 +45,21 @@ class AtvRemoteModule : Module() {
 
     private fun ctx(): Context = appContext.reactContext ?: throw IllegalStateException("no context")
 
-    // ---------- مفتاح وشهادة هذا الجهاز (تُحفظ في Android Keystore) ----------
-    private fun keyStore(): KeyStore {
-        val ks = KeyStore.getInstance("AndroidKeyStore"); ks.load(null)
-        if (!ks.containsAlias(alias)) {
-            val gen = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_RSA, "AndroidKeyStore")
-            val now = System.currentTimeMillis()
-            gen.initialize(
-                KeyGenParameterSpec.Builder(alias, KeyProperties.PURPOSE_SIGN or KeyProperties.PURPOSE_VERIFY)
-                    .setKeySize(2048)
-                    .setDigests(KeyProperties.DIGEST_NONE, KeyProperties.DIGEST_SHA1, KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA384, KeyProperties.DIGEST_SHA512)
-                    .setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PKCS1, KeyProperties.SIGNATURE_PADDING_RSA_PSS)
-                    .setCertificateSubject(X500Principal("CN=TV Raymond"))
-                    .setCertificateSerialNumber(BigInteger.valueOf(now))
-                    .setCertificateNotBefore(Date(now - 86_400_000L))
-                    .setCertificateNotAfter(Date(now + 20L * 365 * 86_400_000L))
-                    .build(),
-            )
-            gen.generateKeyPair()
+    // ---------- مفتاح وشهادة هذا الجهاز (تُحفظ في ملفات التطبيق) ----------
+    @Volatile private var cached: KeyStore? = null
+    @Synchronized private fun keyStore(): KeyStore {
+        cached?.let { return it }
+        val dir = ctx().filesDir
+        val kf = java.io.File(dir, "atv_key.der"); val cf = java.io.File(dir, "atv_cert.der")
+        var key: PrivateKey? = null; var cert: X509Certificate? = null
+        try { if (kf.exists() && cf.exists()) { key = SelfCert.decodeKey(kf.readBytes()); cert = SelfCert.decodeCert(cf.readBytes()) } } catch (_: Exception) {}
+        if (key == null || cert == null) {
+            val g = SelfCert.generate(); key = g.first; cert = g.second
+            kf.writeBytes(SelfCert.encodeKey(key)); cf.writeBytes(cert.encoded)
         }
+        val ks = KeyStore.getInstance("PKCS12"); ks.load(null, null)
+        ks.setKeyEntry(alias, key, CharArray(0), arrayOf(cert))
+        cached = ks
         return ks
     }
 
@@ -74,7 +70,7 @@ class AtvRemoteModule : Module() {
             override fun chooseEngineClientAlias(keyType: Array<out String>?, issuers: Array<out Principal>?, engine: javax.net.ssl.SSLEngine?): String = alias
             override fun getClientAliases(keyType: String?, issuers: Array<out Principal>?): Array<String> = arrayOf(alias)
             override fun getCertificateChain(a: String?): Array<X509Certificate> = ks.getCertificateChain(alias).map { it as X509Certificate }.toTypedArray()
-            override fun getPrivateKey(a: String?): PrivateKey = ks.getKey(alias, null) as PrivateKey
+            override fun getPrivateKey(a: String?): PrivateKey = ks.getKey(alias, CharArray(0)) as PrivateKey
             override fun getServerAliases(keyType: String?, issuers: Array<out Principal>?): Array<String>? = null
             override fun chooseServerAlias(keyType: String?, issuers: Array<out Principal>?, socket: Socket?): String? = null
         }
