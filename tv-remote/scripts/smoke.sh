@@ -54,7 +54,7 @@ echo "=== FAKE ROKU LOG ==="; cat roku.log | sort | uniq -c | head -20
 grep -q "POST /keypress" roku.log || { echo "FAIL: no key reached the TV"; FAIL=1; }
 grep -q "device-info" roku.log || { echo "FAIL: TV never discovered"; FAIL=1; }
 echo "pid end: $(adb shell pidof com.raymond.tv || echo DEAD)"; adb shell pidof com.raymond.tv >/dev/null || FAIL=1
-echo "=== LOGCAT ==="; adb logcat -d | grep -E "AndroidRuntime|FATAL|ReactNativeJS|SIGABRT" | head -60
+echo "=== LOGCAT ==="; adb logcat -d | grep -iE "AndroidRuntime|FATAL|ReactNative|Hermes|SIGABRT|Unhandled|Invariant|TypeError|ReferenceError|not implemented" | grep -v "uiautomator\|Monkey" | head -60
 echo "RESULT FAIL=$FAIL"
 kill $SRV 2>/dev/null
 exit $FAIL

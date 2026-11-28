@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { Platform, Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { NavProvider, Route, useNav } from './src/nav';
 import RemoteScreen from './src/screens/RemoteScreen';
@@ -44,16 +44,16 @@ function Router() {
   }
 }
 
-// ?route=settings يفتح شاشة معينة مباشرة (مفيد للمعاينة على الويب)
-function initialRoute(): Route {
-  try {
-    const r = new URLSearchParams((globalThis as any).location?.search ?? '').get('route');
-    return (r as Route) || 'remote';
-  } catch { return 'remote'; }
+// ?route=settings يفتح شاشة معينة مباشرة (للمعاينة على الويب فقط).
+// ملاحظة: على أندرويد دالة URLSearchParams.get غير مدعومة وترمي خطأ، فنحصرها بالويب.
+function routeParam(): string | null {
+  if (Platform.OS !== 'web') return null;
+  try { return new URLSearchParams((globalThis as any).location?.search ?? '').get('route'); } catch { return null; }
 }
+function initialRoute(): Route { return (routeParam() as Route) || 'remote'; }
 
-export default function App() {
-  const [intro, setIntro] = React.useState(!new URLSearchParams((globalThis as any).location?.search ?? '').get('route'));
+function Main() {
+  const [intro, setIntro] = React.useState(!routeParam());
   const [loaded] = useFonts({ Cairo_600SemiBold, Cairo_700Bold, Cairo_800ExtraBold });
   React.useEffect(() => {
     // يتصل تلقائياً بآخر تلفزيون محفوظ
@@ -69,9 +69,13 @@ export default function App() {
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <StatusBar style="light" />
       <NavProvider initial={initialRoute()}>
-        <Boundary><Router /></Boundary>
+        <Router />
       </NavProvider>
       {intro && <Intro onDone={() => setIntro(false)} />}
     </View>
   );
+}
+
+export default function App() {
+  return <Boundary><Main /></Boundary>;
 }
