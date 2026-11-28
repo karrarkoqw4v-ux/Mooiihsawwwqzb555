@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { NavProvider, Route, useNav } from './src/nav';
 import RemoteScreen from './src/screens/RemoteScreen';
@@ -13,6 +13,21 @@ import { useStore } from './src/store';
 import Intro from './src/screens/Intro';
 import AddAppScreen from './src/screens/AddAppScreen';
 import { useFonts, Cairo_600SemiBold, Cairo_700Bold, Cairo_800ExtraBold } from '@expo-google-fonts/cairo';
+
+class Boundary extends React.Component<{ children: React.ReactNode }, { err?: Error }> {
+  state: { err?: Error } = {};
+  static getDerivedStateFromError(err: Error) { return { err }; }
+  render() {
+    if (!this.state.err) return this.props.children;
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.bg, padding: 24, paddingTop: 70 }}>
+        <Text selectable style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>صار خطأ في التطبيق</Text>
+        <Text selectable style={{ color: '#e5484d', marginTop: 12 }}>{String(this.state.err?.message)}</Text>
+        <Text selectable style={{ color: '#b0b0b8', marginTop: 12, fontSize: 11 }}>{String(this.state.err?.stack).slice(0, 1500)}</Text>
+      </View>
+    );
+  }
+}
 
 function Router() {
   const { route } = useNav();
@@ -54,7 +69,7 @@ export default function App() {
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <StatusBar style="light" />
       <NavProvider initial={initialRoute()}>
-        <Router />
+        <Boundary><Router /></Boundary>
       </NavProvider>
       {intro && <Intro onDone={() => setIntro(false)} />}
     </View>

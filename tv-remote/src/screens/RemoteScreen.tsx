@@ -68,14 +68,14 @@ export default function RemoteScreen({ startPage = 1 }: { startPage?: number }) 
 
       {/* صفحتان: أرقام / أسهم */}
       <View style={{ flex: 1, justifyContent: 'center' }} onLayout={onLayout}>
-        <ScrollView
+        {w > 0 && <ScrollView
           ref={sv} horizontal pagingEnabled showsHorizontalScrollIndicator={false}
           onMomentumScrollEnd={(e) => w && setPage(Math.round(e.nativeEvent.contentOffset.x / w))}
           style={{ flexGrow: 0 }} onContentSizeChange={onSize}
         >
-          <View style={{ width: w, alignItems: 'center' }}><NumPad width={Math.min(290, w * 0.74)} /></View>
-          <View style={{ width: w, alignItems: 'center' }}><DPad size={Math.min(250, w * 0.62)} /></View>
-        </ScrollView>
+          <View style={{ width: w, alignItems: 'center' }}><NumPad width={Math.max(150, Math.min(290, w * 0.74))} /></View>
+          <View style={{ width: w, alignItems: 'center' }}><DPad size={Math.max(120, Math.min(250, w * 0.62))} /></View>
+        </ScrollView>}
         <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 14 }}>
           {[0, 1].map((i) => (
             <View key={i} style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: i === page ? '#ddd' : '#555' }} />
