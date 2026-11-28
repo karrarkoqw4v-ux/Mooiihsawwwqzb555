@@ -123,6 +123,8 @@ if wait_text "اكتب هنا" 25; then
 else echo "FAIL(atv): keyboard did not open automatically"; FAIL=1; fi
 echo "--- fake Android TV log (final) ---"; cat atv.log
 echo "--- picker diagnostics ---"; texts | grep -E "فحص الشبكة|وحدة Android|تعذر فحص" || true
+echo "--- apk dex check ---"; APK="$PWD/TV-Raymond.apk"; rm -rf /tmp/apkx; mkdir /tmp/apkx; (cd /tmp/apkx && unzip -q -o "$APK" 'classes*.dex'; for f in classes*.dex; do echo "$f AtvRemoteModule=$(grep -c AtvRemoteModule $f) BtShareModule=$(grep -c BtShareModule $f)"; done) || true
+echo "--- expo errors ---"; adb logcat -d | grep -E " E | F " | grep -iE "expo|atv|module|kotlin" | head -20 || true
 echo "--- logcat (atv) ---"; adb logcat -d | grep -iE "AtvRemote|Cannot find native|expo.modules|ModuleRegistry|nsd|NsdService" | tail -30
 kill $ATV 2>/dev/null
 echo "pid end: $(adb shell pidof com.raymond.tv || echo DEAD)"; adb shell pidof com.raymond.tv >/dev/null || FAIL=1

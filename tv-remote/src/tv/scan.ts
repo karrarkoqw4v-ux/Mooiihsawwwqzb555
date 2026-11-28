@@ -58,7 +58,9 @@ async function scanJs(onFound: (d: TvDevice) => void, isCancelled: () => boolean
 export const scanDiag = { text: '' };   // تفاصيل آخر فحص (تظهر للمستخدم إذا ما لقى شي)
 
 export async function scanNetwork(onFound: (d: TvDevice) => void, isCancelled: () => boolean) {
-  scanDiag.text = Atv ? '' : 'وحدة Android TV غير متوفرة في هذا الجهاز';
+  let mods = '';
+  try { mods = Object.keys((globalThis as any).expo?.modules ?? {}).filter((k) => /atv|bt|share/i.test(k)).join(','); } catch {}
+  scanDiag.text = Atv ? '' : 'وحدة Android TV غير متوفرة في هذا الجهاز [' + mods + ']';
   // Android TV / Google TV: اكتشاف أصلي (mDNS + مسح المنفذ 6466) بالتوازي مع فحص Roku/Samsung/LG
   const native = Atv
     ? (async () => {
