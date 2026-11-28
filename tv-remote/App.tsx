@@ -54,7 +54,9 @@ function initialRoute(): Route { return (routeParam() as Route) || 'remote'; }
 
 function Main() {
   const [intro, setIntro] = React.useState(!routeParam());
-  const [loaded] = useFonts({ Cairo_600SemiBold, Cairo_700Bold, Cairo_800ExtraBold });
+  const [, fontError] = useFonts({ Cairo_600SemiBold, Cairo_700Bold, Cairo_800ExtraBold });
+  // لا نمنع ظهور التطبيق بانتظار الخطوط: إن تأخرت أو فشلت يستعمل خط النظام مؤقتاً
+  React.useEffect(() => { if (fontError) console.error('FONT ERROR: ' + fontError.message); }, [fontError]);
   React.useEffect(() => {
     // يتصل تلقائياً بآخر تلفزيون محفوظ
     const t = setTimeout(() => {
@@ -64,7 +66,6 @@ function Main() {
     }, 300);
     return () => clearTimeout(t);
   }, []);
-  if (!loaded) return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <StatusBar style="light" />
