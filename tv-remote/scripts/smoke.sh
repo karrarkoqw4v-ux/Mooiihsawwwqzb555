@@ -7,7 +7,16 @@ snap() {  # لقطة مصغرة تُطبع في السجل بصيغة base64 ل�
   adb exec-out screencap -p | convert png:- -resize 260x -quality 55 jpg:- | base64 -w0; echo
   echo "=== END SNAP ==="
 }
-dump() { adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1; adb pull /sdcard/ui.xml ui.xml >/dev/null 2>&1; }
+dump() {
+  rm -f ui.xml
+  for i in 1 2 3 4 5; do
+    adb shell rm -f /sdcard/ui.xml
+    adb shell uiautomator dump /sdcard/ui.xml 2>&1 | tail -2
+    adb pull /sdcard/ui.xml ui.xml >/dev/null 2>&1 && [ -s ui.xml ] && return 0
+    sleep 2
+  done
+  echo "dump failed"; adb shell dumpsys window | grep -E "mCurrentFocus|mFocusedApp" | head -3
+}
 texts() { python3 -c "
 import xml.etree.ElementTree as ET
 for n in ET.parse('ui.xml').iter('node'):

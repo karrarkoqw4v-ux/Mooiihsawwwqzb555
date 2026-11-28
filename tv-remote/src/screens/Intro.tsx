@@ -42,12 +42,15 @@ export default function Intro({ onDone }: { onDone: () => void }) {
   const out = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    const pulse = (v: Animated.Value, delay: number) =>
-      Animated.loop(Animated.sequence([
+    const loops: Animated.CompositeAnimation[] = [];
+    const pulse = (v: Animated.Value, delay: number) => {
+      const a = Animated.loop(Animated.sequence([
         Animated.delay(delay),
         Animated.timing(v, { toValue: 1, duration: 1400, easing: Easing.out(Easing.quad), useNativeDriver: true }),
         Animated.timing(v, { toValue: 0, duration: 0, useNativeDriver: true }),
-      ])).start();
+      ]));
+      loops.push(a); a.start();
+    };
     pulse(ring, 0); pulse(ring2, 700);
     const safety = setTimeout(finish, 5000);   // مهما حصل، الدخول لا يعلق أكثر من 5 ثواني
     Animated.sequence([
@@ -59,7 +62,7 @@ export default function Intro({ onDone }: { onDone: () => void }) {
       Animated.delay(700),
       Animated.timing(out, { toValue: 0, duration: 450, useNativeDriver: true }),
     ]).start(finish);
-    return () => clearTimeout(safety);
+    return () => { clearTimeout(safety); loops.forEach((l) => l.stop()); };
   }, []);
 
   const scale = burst.interpolate({ inputRange: [0, 1], outputRange: [0.2, 1] });
