@@ -62,9 +62,9 @@ export default function RemoteScreen({ startPage = 1 }: { startPage?: number }) 
         <Pressable onPress={() => send('power')} style={{ position: 'absolute', left: 20, padding: 6 }}>
           <Ionicons name="power" size={26} color={colors.red} />
         </Pressable>
-        <Pressable onPress={() => nav.push('tvPicker')} style={{ alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 6, maxWidth: '58%' }}>
+        <Pressable onPress={() => nav.push('tvPicker')} style={{ alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 6, maxWidth: 270 }}>
           <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: conn === 'connected' ? colors.green : conn === 'connecting' ? '#f5a623' : colors.red }} />
-          <Text numberOfLines={1} style={{ color: colors.text, fontSize: 20, fontWeight: '800', flexShrink: 1 }}>{device?.name ?? 'اتصال بالتلفاز'}</Text>
+          <Text numberOfLines={1} style={{ color: colors.text, fontSize: 19, fontWeight: '800' }}>{device?.name ?? 'اتصال بالتلفاز'}</Text>
           <Ionicons name="caret-down" size={12} color="#ddd" />
         </Pressable>
         <Pressable accessibilityLabel="الإعدادات" onPress={() => nav.push('settings')} style={{ position: 'absolute', right: 20, padding: 6 }}>

@@ -73,6 +73,56 @@ echo "=== FAKE ROKU LOG ==="; cat roku.log | sort | uniq -c | head -20
 for k in Up Down Left Right Select; do grep -q "keypress/$k" roku.log || { echo "FAIL: $k did not reach TV"; FAIL=1; }; done
 grep -q "POST /keypress" roku.log || { echo "FAIL: no key reached the TV"; FAIL=1; }
 grep -q "device-info" roku.log || { echo "FAIL: TV never discovered"; FAIL=1; }
+
+# ===================== Android TV (تلفزيون وهمي بتشفير TLS حقيقي) =====================
+echo "===== ANDROID TV TEST ====="
+kill $SRV 2>/dev/null; sleep 1
+rm -f pair_code.txt atv.log show_keyboard
+python3 scripts/fake_atv.py >/dev/null 2>&1 </dev/null &
+ATV=$!
+sleep 3
+adb shell am force-stop com.raymond.tv
+adb shell pm clear com.raymond.tv >/dev/null
+adb shell cmd locale set-app-locales com.raymond.tv --locales ar-IQ >/dev/null 2>&1
+adb shell monkey -p com.raymond.tv -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1
+wait_text() { local t="$1" n="${2:-20}" i; for i in $(seq 1 $n); do dump; if texts | grep -qF "$t"; then return 0; fi; sleep 1; done; return 1; }
+tap() { python3 scripts/tap_text.py "$1" > xy.txt && adb shell input tap $(cat xy.txt); }
+wait_text "اتصال بالتلفاز" 30 || { echo "FAIL(atv): remote screen missing"; FAIL=1; }
+tap "اتصال بالتلفاز"
+if wait_text "اقتران التلفزيون" 60; then
+  snap 6_atv_pair_screen
+  for i in $(seq 1 30); do [ -s pair_code.txt ] && break; sleep 1; done
+  CODE=$(cat pair_code.txt 2>/dev/null); echo "pair code from TV: $CODE"
+  sleep 2; adb shell input text "$CODE"
+  for i in $(seq 1 30); do grep -q CONTROL_CONNECTED atv.log && break; sleep 1; done
+else
+  echo "FAIL(atv): pairing screen not shown (discovery failed?)"; FAIL=1
+fi
+echo "--- fake Android TV log ---"; cat atv.log
+grep -q "PAIR_REQUEST TV Raymond" atv.log || { echo "FAIL(atv): no pairing request"; FAIL=1; }
+grep -q "^PAIRED" atv.log || { echo "FAIL(atv): pairing not completed"; FAIL=1; }
+grep -q "CLIENT_CONFIG" atv.log || { echo "FAIL(atv): remote handshake missing"; FAIL=1; }
+grep -q "CONTROL_CONNECTED" atv.log || { echo "FAIL(atv): control connection not established"; FAIL=1; }
+sleep 3; dump; snap 7_atv_connected; texts
+# مفاتيح: لمسة (OK) وسحبة لأعلى على لوحة اللمس
+if python3 scripts/tap_text.py "OK" > ok2.txt; then
+  read CX CY < ok2.txt
+  adb shell input tap $CX $CY; sleep 1
+  adb shell input swipe $CX $((CY+130)) $CX $((CY-130)) 300; sleep 1
+  adb shell input swipe $((CX-130)) $CY $((CX+130)) $CY 300; sleep 1
+else echo "FAIL(atv): touchpad not visible after pairing"; FAIL=1; fi
+grep -q "KEY 23 3" atv.log || { echo "FAIL(atv): OK key did not reach TV"; FAIL=1; }
+grep -q "KEY 19 3" atv.log || { echo "FAIL(atv): UP key did not reach TV"; FAIL=1; }
+grep -q "KEY 22 3" atv.log || { echo "FAIL(atv): RIGHT key did not reach TV"; FAIL=1; }
+# لوحة المفاتيح تلقائياً: التلفزيون يفتح حقل بحث => تظهر لوحة الكتابة على الجوال، ونكتب
+touch show_keyboard
+if wait_text "اكتب هنا" 25; then
+  snap 8_atv_keyboard_auto
+  adb shell input text hello; sleep 4
+  for ch in h e l o; do grep -q "TEXT $ch " atv.log || { echo "FAIL(atv): typed char $ch missing"; FAIL=1; }; done
+else echo "FAIL(atv): keyboard did not open automatically"; FAIL=1; fi
+echo "--- fake Android TV log (final) ---"; cat atv.log
+kill $ATV 2>/dev/null
 echo "pid end: $(adb shell pidof com.raymond.tv || echo DEAD)"; adb shell pidof com.raymond.tv >/dev/null || FAIL=1
 echo "=== LOGCAT ==="; adb logcat -d | grep -iE "AndroidRuntime|FATAL|ReactNative|Hermes|SIGABRT|Unhandled|Invariant|TypeError|ReferenceError|not implemented" | grep -v "uiautomator\|Monkey" | head -60
 echo "RESULT FAIL=$FAIL"

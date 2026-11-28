@@ -1,19 +1,20 @@
 export type Key =
   | 'up' | 'down' | 'left' | 'right' | 'ok'
   | 'back' | 'home' | 'menu' | 'tv'
-  | 'power' | 'mute'
+  | 'power' | 'mute' | 'del'
   | 'vol_up' | 'vol_down' | 'ch_up' | 'ch_down'
   | 'num_0' | 'num_1' | 'num_2' | 'num_3' | 'num_4'
   | 'num_5' | 'num_6' | 'num_7' | 'num_8' | 'num_9';
 
-export type Brand = 'roku' | 'samsung' | 'lg';
+export type Brand = 'roku' | 'samsung' | 'lg' | 'androidtv';
 
 export interface TvDevice {
   id: string;        // = host
   name: string;
   host: string;
   brand: Brand;
-  token?: string;    // مفتاح الاقتران (LG / Samsung)
+  token?: string;    // مفتاح الاقتران (LG / Samsung) أو 'paired' لـ Android TV
+  address?: string;  // العنوان المعروض (MAC إن وُجد وإلا IP)
 }
 
 export interface TvDriver {

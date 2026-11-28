@@ -2,7 +2,7 @@ import { Key, openWS, TvDevice, TvDriver } from './driver';
 
 const KEYS: Record<Key, string> = {
   up: 'KEY_UP', down: 'KEY_DOWN', left: 'KEY_LEFT', right: 'KEY_RIGHT', ok: 'KEY_ENTER', back: 'KEY_RETURN',
-  home: 'KEY_HOME', menu: 'KEY_MENU', tv: 'KEY_TV', power: 'KEY_POWER', mute: 'KEY_MUTE',
+  home: 'KEY_HOME', menu: 'KEY_MENU', tv: 'KEY_TV', power: 'KEY_POWER', mute: 'KEY_MUTE', del: 'KEY_BACKSPACE',
   vol_up: 'KEY_VOLUP', vol_down: 'KEY_VOLDOWN', ch_up: 'KEY_CHUP', ch_down: 'KEY_CHDOWN',
   num_0: 'KEY_0', num_1: 'KEY_1', num_2: 'KEY_2', num_3: 'KEY_3', num_4: 'KEY_4',
   num_5: 'KEY_5', num_6: 'KEY_6', num_7: 'KEY_7', num_8: 'KEY_8', num_9: 'KEY_9',

@@ -2,7 +2,7 @@ import { Key, openWS, TvDevice, TvDriver, withTimeout } from './driver';
 
 const BTN: Record<Key, string> = {
   up: 'UP', down: 'DOWN', left: 'LEFT', right: 'RIGHT', ok: 'ENTER', back: 'BACK', home: 'HOME', menu: 'MENU',
-  tv: 'LIVETV', power: 'POWER', mute: 'MUTE', vol_up: 'VOLUMEUP', vol_down: 'VOLUMEDOWN',
+  tv: 'LIVETV', power: 'POWER', mute: 'MUTE', del: 'DELETE', vol_up: 'VOLUMEUP', vol_down: 'VOLUMEDOWN',
   ch_up: 'CHANNELUP', ch_down: 'CHANNELDOWN',
   num_0: '0', num_1: '1', num_2: '2', num_3: '3', num_4: '4', num_5: '5', num_6: '6', num_7: '7', num_8: '8', num_9: '9',
 };

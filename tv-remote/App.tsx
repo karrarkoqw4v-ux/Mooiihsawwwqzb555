@@ -1,12 +1,14 @@
 import React from 'react';
-import { Platform, Text, View } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
+import { BlurView } from 'expo-blur';
+import * as NavigationBar from 'expo-navigation-bar';
 import { StatusBar } from 'expo-status-bar';
 import { NavProvider, Route, useNav } from './src/nav';
 import RemoteScreen from './src/screens/RemoteScreen';
 import {
   BehaviorScreen, ConnectedDevicesScreen, ManageAppsScreen, RemoteStyleScreen, SettingsScreen,
 } from './src/screens/SettingsScreens';
-import { KeyboardSheet, TvPickerSheet } from './src/screens/Sheets';
+import { KeyboardSheet, PairSheet, TvPickerSheet, kb } from './src/screens/Sheets';
 import { colors } from './src/theme';
 import { tv } from './src/tv/manager';
 import { useStore } from './src/store';
@@ -30,20 +32,50 @@ class Boundary extends React.Component<{ children: React.ReactNode }, { err?: Er
   }
 }
 
+const OVERLAYS: Route[] = ['tvPicker', 'keyboard', 'pair'];
+
 function Router() {
-  const { route } = useNav();
+  const nav = useNav();
+  const { route } = nav;
+  const pairingFor = useStore((x) => x.pairingFor);
+  const routeRef = React.useRef(route); routeRef.current = route;
+
+  // التلفزيون فتح حقل كتابة (بحث...) => نفتح لوحة المفاتيح على الجوال تلقائياً
+  React.useEffect(() => tv.onKeyboard((text) => {
+    kb.text = text;
+    if (routeRef.current !== 'keyboard') nav.push('keyboard');
+  }), []);
+  // جهاز Android TV يحتاج اقتران (مثلاً عند الاتصال التلقائي) => نفتح شاشة الرمز
+  React.useEffect(() => { if (pairingFor && route === 'remote') nav.push('pair'); }, [pairingFor, route]);
+
+  const overlay = OVERLAYS.includes(route);
+  let page: React.ReactNode;
   switch (route) {
-    case 'settings': return <SettingsScreen />;
-    case 'remoteStyle': return <RemoteStyleScreen />;
-    case 'behavior': return <BehaviorScreen />;
-    case 'manageApps': return <ManageAppsScreen />;
-    case 'devices': return <ConnectedDevicesScreen />;
-    case 'tvPicker': return <TvPickerSheet />;
-    case 'keyboard': return <KeyboardSheet />;
-    case 'addApp': return <AddAppScreen />;
-    case 'pcShare': return <ShareScreen />;
-    default: return <RemoteScreen />;
+    case 'settings': page = <SettingsScreen />; break;
+    case 'remoteStyle': page = <RemoteStyleScreen />; break;
+    case 'behavior': page = <BehaviorScreen />; break;
+    case 'manageApps': page = <ManageAppsScreen />; break;
+    case 'devices': page = <ConnectedDevicesScreen />; break;
+    case 'tvPicker': page = <TvPickerSheet />; break;
+    case 'keyboard': page = <KeyboardSheet />; break;
+    case 'pair': page = <PairSheet />; break;
+    case 'addApp': page = <AddAppScreen />; break;
+    case 'pcShare': page = <ShareScreen />; break;
+    default: page = <RemoteScreen />;
   }
+  // النوافذ تُرسم فوق الريموت بخلفية شفافة ضبابية
+  return (
+    <>
+      {overlay ? <RemoteScreen /> : page}
+      {overlay && (
+        <View style={StyleSheet.absoluteFill}>
+          <BlurView intensity={70} tint="dark" experimentalBlurMethod="dimezisBlurView" style={StyleSheet.absoluteFill} />
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(8,8,10,0.5)' }]} />
+          {page}
+        </View>
+      )}
+    </>
+  );
 }
 
 // ?route=settings يفتح شاشة معينة مباشرة (للمعاينة على الويب فقط).
@@ -59,6 +91,12 @@ function Main() {
   const [, fontError] = useFonts({ Cairo_600SemiBold, Cairo_700Bold, Cairo_800ExtraBold });
   // لا نمنع ظهور التطبيق بانتظار الخطوط: إن تأخرت أو فشلت يستعمل خط النظام مؤقتاً
   React.useEffect(() => { if (fontError) console.error('FONT ERROR: ' + fontError.message); }, [fontError]);
+  React.useEffect(() => {
+    if (Platform.OS === 'android') {   // شريط أندرويد السفلي بنفس لون التطبيق (بدل الأبيض)
+      NavigationBar.setBackgroundColorAsync(colors.bg).catch(() => {});
+      NavigationBar.setButtonStyleAsync('light').catch(() => {});
+    }
+  }, []);
   React.useEffect(() => {
     // يتصل تلقائياً بآخر تلفزيون محفوظ
     const t = setTimeout(() => {

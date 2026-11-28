@@ -43,6 +43,7 @@ interface State {
   devices: TvDevice[];
   activeId: string | null;
   conn: 'idle' | 'connecting' | 'connected' | 'error';
+  pairingFor: string | null;   // جهاز Android TV ينتظر إدخال رمز الاقتران
   pc: { name: string; address: string } | null;   // الكمبيوتر المختار لمشاركة الملفات
   updateDevice: (id: string, p: Partial<TvDevice>) => void;
   apps: TvApp[];
@@ -65,6 +66,7 @@ export const useStore = create<State>()(persist((set) => ({
   activeId: null,
   conn: 'idle',
   pc: null,
+  pairingFor: null,
   updateDevice: (id, p) => set((s) => ({ devices: s.devices.map((d) => (d.id === id ? { ...d, ...p } : d)) })),
   apps: DEFAULT_APPS,
   controlMode: 'touch',

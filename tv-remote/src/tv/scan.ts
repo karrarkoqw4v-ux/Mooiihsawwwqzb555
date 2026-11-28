@@ -1,5 +1,6 @@
 import * as Network from 'expo-network';
 import { Brand, TvDevice, withTimeout } from './driver';
+import { Atv } from '../../modules/atv-remote';
 
 // يمسح شبكة الواي فاي (/24) بالتوازي ويفحص منافذ Roku / Samsung / LG. يرجع النتائج فور ظهورها.
 async function http(url: string, ms: number): Promise<string | null> {
@@ -36,7 +37,8 @@ async function probe(host: string): Promise<TvDevice | null> {
   return null;
 }
 
-export async function scanNetwork(onFound: (d: TvDevice) => void, isCancelled: () => boolean) {
+
+async function scanJs(onFound: (d: TvDevice) => void, isCancelled: () => boolean) {
   const ip = await Network.getIpAddressAsync();
   const parts = ip.split('.');
   if (parts.length !== 4 || ip === '0.0.0.0') throw new Error('no wifi');
@@ -51,4 +53,18 @@ export async function scanNetwork(onFound: (d: TvDevice) => void, isCancelled: (
     }
   };
   await Promise.all(Array.from({ length: 80 }, worker));
+}
+
+export async function scanNetwork(onFound: (d: TvDevice) => void, isCancelled: () => boolean) {
+  // Android TV / Google TV: اكتشاف أصلي (mDNS + مسح المنفذ 6466) بالتوازي مع فحص Roku/Samsung/LG
+  const native = Atv
+    ? (async () => {
+        const sub = Atv.addListener('found', (f) => {
+          if (!isCancelled()) onFound({ id: f.host, host: f.host, brand: 'androidtv', name: f.name || 'Android TV', address: f.mac || f.host });
+        });
+        try { await Atv.discover(5000); } catch {} finally { sub.remove(); }
+      })()
+    : Promise.resolve();
+  const [, js] = await Promise.allSettled([native, scanJs(onFound, isCancelled)]);
+  if (js.status === 'rejected' && !Atv) throw js.reason;   // إذا تعذر الفحص العادي لكن الأصلي اشتغل لا نعرض خطأ
 }

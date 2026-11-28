@@ -35,7 +35,7 @@ export default function AppsRow() {
       {apps.map((a) => (
         <Pressable key={a.id} onPress={() => driver.launchApp(a.id)} style={{ alignItems: 'center', width: 86 }}>
           <AppLogo app={a} />
-          <Text numberOfLines={2} style={{ color: '#fff', fontSize: 13, fontWeight: '700', textAlign: 'center', marginTop: 4, lineHeight: 18 }}>
+          <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7} style={{ color: '#fff', fontSize: 13, fontWeight: '700', textAlign: 'center', marginTop: 4, lineHeight: 20 }}>
             {a.name}
           </Text>
         </Pressable>
