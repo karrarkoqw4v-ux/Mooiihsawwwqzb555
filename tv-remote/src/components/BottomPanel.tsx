@@ -1,5 +1,6 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from './Text';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { KeyButton, useSendKey } from './common';
 import { colors } from '../theme';
@@ -15,7 +16,7 @@ const Rocker = ({ label, plus, minus }: { label: string; plus: () => void; minus
     <KeyButton round style={{ width: 52, height: 52, backgroundColor: 'transparent' }} onPress={plus}>
       {label === 'VOL' ? <Ionicons name="add" size={24} color="#ddd" /> : <Ionicons name="chevron-up" size={22} color="#ddd" />}
     </KeyButton>
-    <Text style={{ color: colors.text, fontSize: 15, letterSpacing: 0.5 }}>{label}</Text>
+    <Text style={{ color: colors.text, fontSize: 16, fontWeight: '700', letterSpacing: 0.5 }}>{label}</Text>
     <KeyButton round style={{ width: 52, height: 52, backgroundColor: 'transparent' }} onPress={minus}>
       {label === 'VOL' ? <Ionicons name="remove" size={24} color="#ddd" /> : <Ionicons name="chevron-down" size={22} color="#ddd" />}
     </KeyButton>

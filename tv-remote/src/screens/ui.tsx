@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, ScrollView, Switch, Text, View } from 'react-native';
+import { Pressable, ScrollView, Switch, View } from 'react-native';
+import { Text } from '../components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme';
 import { useNav } from '../nav';
@@ -13,7 +14,7 @@ export function Screen({ title, children, scroll = true }: { title: string; chil
       <View style={{ height: 70, justifyContent: 'flex-end', paddingHorizontal: 20, paddingBottom: 10 }}>
         <Pressable onPress={nav.pop} style={{ flexDirection: 'row-reverse', alignItems: 'center', gap: 10 }}>
           <Ionicons name="arrow-forward" size={22} color={colors.text} />
-          <Text style={{ color: colors.text, fontSize: 22 }}>{title}</Text>
+          <Text style={{ color: colors.text, fontSize: 24, fontWeight: '800' }}>{title}</Text>
         </Pressable>
       </View>
       <Body style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 30 }}>{children}</Body>
@@ -30,7 +31,7 @@ export const SectionTitle = ({ children }: { children: string }) => (
 export function Row({ title, icon, onPress }: { title: string; icon?: any; onPress?: () => void }) {
   return (
     <Pressable onPress={onPress} style={{ flexDirection: 'row-reverse', alignItems: 'center', paddingHorizontal: 24, height: 56 }}>
-      <Text style={{ color: colors.text, fontSize: 20, flex: 1, textAlign: 'right' }}>{title}</Text>
+      <Text style={{ color: colors.text, fontSize: 20, fontWeight: '700', flex: 1, textAlign: 'right' }}>{title}</Text>
       <Ionicons name={icon ?? 'chevron-back'} size={20} color={colors.sub} />
     </Pressable>
   );
@@ -40,8 +41,8 @@ export function ToggleRow({ title, desc, value, onChange }: { title: string; des
   return (
     <View style={{ flexDirection: 'row-reverse', paddingHorizontal: 24, paddingVertical: 12, gap: 14, alignItems: 'flex-start' }}>
       <View style={{ flex: 1 }}>
-        <Text style={{ color: colors.text, fontSize: 20, textAlign: 'right' }}>{title}</Text>
-        <Text style={{ color: colors.sub, fontSize: 15, textAlign: 'right', marginTop: 4, lineHeight: 22 }}>{desc}</Text>
+        <Text style={{ color: colors.text, fontSize: 20, fontWeight: '700', textAlign: 'right' }}>{title}</Text>
+        <Text style={{ color: '#b4b4bc', fontSize: 15, textAlign: 'right', marginTop: 4, lineHeight: 22 }}>{desc}</Text>
       </View>
       <Switch
         value={value} onValueChange={onChange}

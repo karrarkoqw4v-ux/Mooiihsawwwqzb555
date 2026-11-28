@@ -1,5 +1,6 @@
 import React from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from './Text';
 import { KeyButton, useSendKey } from './common';
 import { colors } from '../theme';
 import { Key } from '../tv/driver';
@@ -28,7 +29,7 @@ export default function NumPad({ width = 260 }: { width?: number }) {
                 send(k === 'Menu' ? 'menu' : k === 'TV' ? 'tv' : (`num_${k}` as Key))
               }
             >
-              <Text style={{ color: colors.text, fontSize: k.length > 1 ? 17 : 24 }}>{k}</Text>
+              <Text style={{ color: colors.text, fontSize: k.length > 1 ? 18 : 26, fontWeight: '700' }}>{k}</Text>
             </KeyButton>
           ))}
         </View>

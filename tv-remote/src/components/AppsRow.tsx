@@ -1,35 +1,41 @@
 import React from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import { Text } from './Text';
 import { useStore, TvApp } from '../store';
 import { colors } from '../theme';
 import { driver } from './common';
 
-export const AppLogo = ({ app, size = 62 }: { app: TvApp; size?: number }) => (
-  <View
-    style={{
-      width: size, height: size, borderRadius: size * 0.24, backgroundColor: app.bg,
-      alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#2a2a2e',
-    }}
-  >
-    <Text
-      style={{
-        color: app.fg, fontWeight: '800', textAlign: 'center',
-        fontSize: app.short.length > 3 ? size * 0.22 : size * 0.38, lineHeight: size * 0.28 + (app.short.includes('\n') ? 0 : 6),
-      }}
-    >
-      {app.short}
+// شعار التطبيق: صورة حقيقية، أو أيقونة، أو حرف (للتطبيقات التي يضيفها المستخدم)
+export const AppLogo = ({ app, size = 66 }: { app: TvApp; size?: number }) => {
+  const r = size * 0.24;
+  if (app.logo) {
+    return <Image source={app.logo} style={{ width: size, height: size, borderRadius: r }} />;
+  }
+  const inner = app.icon ? (
+    <Ionicons name={app.icon as any} size={size * 0.55} color={app.fg} />
+  ) : (
+    <Text style={{ color: app.fg, fontWeight: '800', fontSize: size * 0.3, textAlign: 'center', lineHeight: size * 0.34 }}>
+      {app.short ?? app.name.slice(0, 1).toUpperCase()}
     </Text>
-  </View>
-);
+  );
+  const box = { width: size, height: size, borderRadius: r, alignItems: 'center' as const, justifyContent: 'center' as const, overflow: 'hidden' as const };
+  return app.gradient ? (
+    <LinearGradient colors={app.gradient as any} start={{ x: 0.1, y: 1 }} end={{ x: 0.9, y: 0 }} style={box}>{inner}</LinearGradient>
+  ) : (
+    <View style={[box, { backgroundColor: app.bg }]}>{inner}</View>
+  );
+};
 
 export default function AppsRow() {
   const apps = useStore((s) => s.apps);
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 12, gap: 14 }}>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 12, gap: 12 }}>
       {apps.map((a) => (
-        <Pressable key={a.id} onPress={() => driver.launchApp(a.id)} style={{ alignItems: 'center', width: 72 }}>
+        <Pressable key={a.id} onPress={() => driver.launchApp(a.id)} style={{ alignItems: 'center', width: 78 }}>
           <AppLogo app={a} />
-          <Text numberOfLines={2} style={{ color: colors.text, fontSize: 13, textAlign: 'center', marginTop: 6 }}>
+          <Text numberOfLines={2} style={{ color: '#fff', fontSize: 14, fontWeight: '700', textAlign: 'center', marginTop: 6, lineHeight: 19 }}>
             {a.name}
           </Text>
         </Pressable>

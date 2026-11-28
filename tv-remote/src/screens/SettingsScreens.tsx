@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
+import { Text } from '../components/Text';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { colors } from '../theme';
 import { useStore } from '../store';
@@ -89,12 +90,13 @@ export function ManageAppsScreen() {
   const apps = useStore((s) => s.apps);
   const remove = useStore((s) => s.removeApp);
   const move = useStore((s) => s.moveApp);
+  const nav = useNav();
   return (
     <Screen title="إعدادات">
       <View style={{ flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, marginTop: 14 }}>
         <Text style={{ color: colors.sub, fontSize: 18 }}>إدارة التطبيقات</Text>
         <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}>
-          <Ionicons name="add-circle" size={24} color={colors.blue} />
+          <Pressable onPress={() => nav.push('addApp')}><Ionicons name="add-circle" size={30} color={colors.blue} /></Pressable>
           <Ionicons name="ellipsis-vertical" size={20} color={colors.sub} />
         </View>
       </View>

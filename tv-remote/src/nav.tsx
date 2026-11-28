@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState } from 'react';
 
 export type Route =
   | 'remote' | 'settings' | 'remoteStyle' | 'behavior' | 'manageApps' | 'devices'
-  | 'tvPicker' | 'keyboard';
+  | 'tvPicker' | 'keyboard' | 'addApp';
 
 interface Nav { route: Route; stack: Route[]; push: (r: Route) => void; pop: () => void; }
 const Ctx = createContext<Nav>(null as any);

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { Pressable, TextInput, View } from 'react-native';
+import { Text } from '../components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme';
 import { useNav } from '../nav';
@@ -60,7 +61,7 @@ export function KeyboardSheet() {
       <TextInput
         autoFocus value={text} onChangeText={onChange}
         placeholder="...ابدأ الطباعة" placeholderTextColor="#6b6b72"
-        style={[{ color: colors.text, fontSize: 28, textAlign: 'right', paddingHorizontal: 24, marginTop: 60 }, { outlineStyle: 'none' } as any]}
+        style={[{ color: colors.text, fontSize: 28, textAlign: 'right', paddingHorizontal: 24, marginTop: 60, fontFamily: 'Cairo_700Bold' }, { outlineStyle: 'none' } as any]}
       />
     </Sheet>
   );

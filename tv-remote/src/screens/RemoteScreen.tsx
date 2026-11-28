@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { Pressable, ScrollView, Text, View, LayoutChangeEvent } from 'react-native';
+import { Pressable, ScrollView, View, LayoutChangeEvent } from 'react-native';
+import { Text } from '../components/Text';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../theme';
 import { useStore } from '../store';
@@ -51,19 +52,18 @@ export default function RemoteScreen({ startPage = 1 }: { startPage?: number }) 
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <AdBanner />
       {/* الشريط العلوي: تشغيل / اسم الجهاز / إعدادات */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, height: 60 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, height: 60, marginTop: 44 }}>
         <Pressable onPress={() => send('power')}><Ionicons name="power" size={26} color={colors.red} /></Pressable>
         <Pressable onPress={() => nav.push('tvPicker')} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
           <Ionicons name="caret-down" size={12} color="#ddd" />
-          <Text style={{ color: colors.text, fontSize: 20 }}>{device?.name ?? 'لا يوجد جهاز'}</Text>
+          <Text style={{ color: colors.text, fontSize: 22, fontWeight: '800' }}>{device?.name ?? 'لا يوجد جهاز'}</Text>
           <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: colors.red, marginTop: -8 }} />
         </Pressable>
         <Pressable onPress={() => nav.push('settings')}><Ionicons name="settings-sharp" size={26} color="#cfcfd6" /></Pressable>
       </View>
 
-      <View style={{ height: 118, marginTop: 4 }}><AppsRow /></View>
+      <View style={{ height: 124, marginTop: 4 }}><AppsRow /></View>
 
       {/* صفحتان: أرقام / أسهم */}
       <View style={{ flex: 1, justifyContent: 'center' }} onLayout={onLayout}>

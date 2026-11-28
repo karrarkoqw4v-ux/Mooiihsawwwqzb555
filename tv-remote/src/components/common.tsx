@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, StyleProp, Text, View, ViewStyle, Platform } from 'react-native';
+import { Pressable, StyleProp, View, ViewStyle, Platform } from 'react-native';
+import { Text } from './Text';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../theme';
 import { useStore } from '../store';

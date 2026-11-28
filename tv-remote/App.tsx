@@ -8,6 +8,8 @@ import {
 } from './src/screens/SettingsScreens';
 import { KeyboardSheet, TvPickerSheet } from './src/screens/Sheets';
 import { colors } from './src/theme';
+import AddAppScreen from './src/screens/AddAppScreen';
+import { useFonts, Cairo_600SemiBold, Cairo_700Bold, Cairo_800ExtraBold } from '@expo-google-fonts/cairo';
 
 function Router() {
   const { route } = useNav();
@@ -19,6 +21,7 @@ function Router() {
     case 'devices': return <ConnectedDevicesScreen />;
     case 'tvPicker': return <TvPickerSheet />;
     case 'keyboard': return <KeyboardSheet />;
+    case 'addApp': return <AddAppScreen />;
     default: return <RemoteScreen />;
   }
 }
@@ -32,6 +35,8 @@ function initialRoute(): Route {
 }
 
 export default function App() {
+  const [loaded] = useFonts({ Cairo_600SemiBold, Cairo_700Bold, Cairo_800ExtraBold });
+  if (!loaded) return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <StatusBar style="light" />
