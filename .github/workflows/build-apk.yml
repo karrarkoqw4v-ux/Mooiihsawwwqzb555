@@ -54,5 +54,10 @@ jobs:
         with: { name: TV-Raymond-apk }
       - env: { GH_TOKEN: "${{ github.token }}" }
         run: |
+          # نسخة مرقّمة تبقى محفوظة (v18, v19, ...) حتى تقدر ترجع لأي إصدار قديم
+          VER="v${{ github.run_number }}"
+          cp TV-Raymond.apk "TV-Raymond-$VER.apk"
+          gh release create "$VER" "TV-Raymond-$VER.apk" --title "TV Raymond $VER" --notes "إصدار $VER (commit ${GITHUB_SHA::7})" --target "${{ github.sha }}" || true
+          # وهذا الرابط الثابت يشير دائماً لآخر نسخة
           gh release delete apk-latest --yes --cleanup-tag || true
-          gh release create apk-latest TV-Raymond.apk --title "TV Raymond APK" --notes "Latest build" --target "${{ github.sha }}"
+          gh release create apk-latest TV-Raymond.apk --title "TV Raymond (آخر نسخة)" --notes "آخر نسخة ناجحة: $VER" --target "${{ github.sha }}"
