@@ -4,7 +4,7 @@ import { requireOptionalNativeModule } from 'expo-modules-core';
 export type FoundTv = { name: string; host: string; mac: string; brand: 'androidtv' };
 
 type Native = {
-  discover(timeoutMs: number): Promise<FoundTv[]>;
+  discover(timeoutMs: number): Promise<{ devices: FoundTv[]; base: string; nsd: string }>;
   pairStart(host: string): Promise<boolean>;
   pairFinish(code: string): Promise<boolean>;
   connect(host: string): Promise<{ model: string; vendor: string }>;

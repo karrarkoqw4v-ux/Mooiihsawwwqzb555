@@ -96,7 +96,7 @@ if wait_text "اقتران التلفزيون" 60; then
   sleep 2; adb shell input text "$CODE"
   for i in $(seq 1 30); do grep -q CONTROL_CONNECTED atv.log && break; sleep 1; done
 else
-  echo "FAIL(atv): pairing screen not shown (discovery failed?)"; FAIL=1
+  echo "FAIL(atv): pairing screen not shown (discovery failed?)"; FAIL=1; dump; texts
 fi
 echo "--- fake Android TV log ---"; cat atv.log
 grep -q "PAIR_REQUEST TV Raymond" atv.log || { echo "FAIL(atv): no pairing request"; FAIL=1; }
@@ -122,6 +122,8 @@ if wait_text "اكتب هنا" 25; then
   for ch in h e l o; do grep -q "TEXT $ch " atv.log || { echo "FAIL(atv): typed char $ch missing"; FAIL=1; }; done
 else echo "FAIL(atv): keyboard did not open automatically"; FAIL=1; fi
 echo "--- fake Android TV log (final) ---"; cat atv.log
+echo "--- picker diagnostics ---"; texts | grep -E "فحص الشبكة|وحدة Android|تعذر فحص" || true
+echo "--- logcat (atv) ---"; adb logcat -d | grep -iE "AtvRemote|Cannot find native|expo.modules|ModuleRegistry|nsd|NsdService" | tail -30
 kill $ATV 2>/dev/null
 echo "pid end: $(adb shell pidof com.raymond.tv || echo DEAD)"; adb shell pidof com.raymond.tv >/dev/null || FAIL=1
 echo "=== LOGCAT ==="; adb logcat -d | grep -iE "AndroidRuntime|FATAL|ReactNative|Hermes|SIGABRT|Unhandled|Invariant|TypeError|ReferenceError|not implemented" | grep -v "uiautomator\|Monkey" | head -60

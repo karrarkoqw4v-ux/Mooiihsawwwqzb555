@@ -7,7 +7,7 @@ import { useNav } from '../nav';
 import { useStore } from '../store';
 import { driver } from '../components/common';
 import { TOP } from './ui';
-import { scanNetwork } from '../tv/scan';
+import { scanNetwork, scanDiag } from '../tv/scan';
 import { TvDevice } from '../tv/driver';
 import { Atv } from '../../modules/atv-remote';
 
@@ -92,6 +92,9 @@ export function TvPickerSheet() {
       <Text style={{ color: '#9d9da5', fontSize: 14, fontWeight: '600', textAlign: 'right', paddingHorizontal: 24, marginTop: 6 }}>
         يرجى التأكد من تشغيل التلفزيون والاتصال بنفس شبكة Wi-Fi.
       </Text>
+      {!scanning && devices.length === 0 && scanDiag.text ? (
+        <Text selectable style={{ color: '#8a8a92', fontSize: 12, textAlign: 'right', paddingHorizontal: 24, marginTop: 10 }}>{scanDiag.text}</Text>
+      ) : null}
       {!scanning && (
         <Pressable onPress={() => setRound((r) => r + 1)} style={{ margin: 24, height: 52, borderRadius: 16, backgroundColor: 'rgba(108,92,231,0.9)', alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>إعادة البحث</Text>

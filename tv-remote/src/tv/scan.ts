@@ -55,14 +55,21 @@ async function scanJs(onFound: (d: TvDevice) => void, isCancelled: () => boolean
   await Promise.all(Array.from({ length: 80 }, worker));
 }
 
+export const scanDiag = { text: '' };   // تفاصيل آخر فحص (تظهر للمستخدم إذا ما لقى شي)
+
 export async function scanNetwork(onFound: (d: TvDevice) => void, isCancelled: () => boolean) {
+  scanDiag.text = Atv ? '' : 'وحدة Android TV غير متوفرة في هذا الجهاز';
   // Android TV / Google TV: اكتشاف أصلي (mDNS + مسح المنفذ 6466) بالتوازي مع فحص Roku/Samsung/LG
   const native = Atv
     ? (async () => {
         const sub = Atv.addListener('found', (f) => {
           if (!isCancelled()) onFound({ id: f.host, host: f.host, brand: 'androidtv', name: f.name || 'Android TV', address: f.mac || f.host });
         });
-        try { await Atv.discover(5000); } catch {} finally { sub.remove(); }
+        try {
+          const r = await Atv.discover(5000);
+          scanDiag.text = `فحص الشبكة ${r.base}.x · mDNS: ${r.nsd} · Android TV: ${r.devices.length}`;
+          r.devices.forEach((f) => { if (!isCancelled()) onFound({ id: f.host, host: f.host, brand: 'androidtv', name: f.name || 'Android TV', address: f.mac || f.host }); });
+        } catch (e: any) { scanDiag.text = 'تعذر فحص Android TV: ' + (e?.message ?? e); } finally { sub.remove(); }
       })()
     : Promise.resolve();
   const [, js] = await Promise.allSettled([native, scanJs(onFound, isCancelled)]);
