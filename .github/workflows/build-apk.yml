@@ -44,7 +44,7 @@ jobs:
         with: { name: smoke-screen, path: tv-remote/screen.png, if-no-files-found: ignore }
 
   release:
-    needs: apk
+    needs: [apk, smoke]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
